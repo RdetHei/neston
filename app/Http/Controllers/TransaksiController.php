@@ -13,7 +13,9 @@ class TransaksiController extends Controller
 {
     public function index()
     {
-        $items = Transaksi::orderBy('id_parkit','desc')->paginate(15);
+        $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
+            ->orderBy('id_parkit','desc')
+            ->paginate(15);
         return view('transaksi.index', compact('items'));
     }
 
@@ -38,7 +40,13 @@ class TransaksiController extends Controller
         ]);
 
         Transaksi::create($data);
-        return redirect()->route('transaksi.index')->with('success','Transaksi created');
+        return redirect()->route('transaksi.index')->with('success','Transaksi berhasil dibuat');
+    }
+
+    public function show($id)
+    {
+        $item = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])->findOrFail($id);
+        return view('transaksi.show', compact('item'));
     }
 
     public function edit($id)
@@ -62,13 +70,19 @@ class TransaksiController extends Controller
         ]);
 
         $item->update($data);
-        return redirect()->route('transaksi.index')->with('success','Transaksi updated');
+        return redirect()->route('transaksi.index')->with('success','Transaksi berhasil diupdate');
+    }
+
+    public function print($id)
+    {
+        $transaksi = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])->findOrFail($id);
+        return view('parkir.receipt', compact('transaksi'));
     }
 
     public function destroy($id)
     {
         Transaksi::destroy($id);
-        return redirect()->route('transaksi.index')->with('success','Transaksi deleted');
+        return redirect()->route('transaksi.index')->with('success','Transaksi berhasil dihapus');
     }
 }
 

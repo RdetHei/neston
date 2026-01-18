@@ -3,6 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Transaksi;
+use App\Models\Kendaraan;
+use App\Models\Tarif;
+use App\Models\AreaParkir;
+use Carbon\Carbon;
 
 class ParkirController extends Controller
 {
@@ -11,7 +17,12 @@ class ParkirController extends Controller
      */
     public function index()
     {
-        return view('parkir.index');
+        $transaksis = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
+            ->where('status', 'masuk')
+            ->orderBy('waktu_masuk', 'desc')
+            ->paginate(15);
+        
+        return view('parkir.index', compact('transaksis'));
     }
 
     /**
@@ -19,7 +30,11 @@ class ParkirController extends Controller
      */
     public function create()
     {
-        return view('parkir.create');
+        $kendaraans = Kendaraan::orderBy('plat_nomor')->get();
+        $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
+        $areas = AreaParkir::orderBy('nama_area')->get();
+        
+        return view('parkir.create', compact('kendaraans', 'tarifs', 'areas'));
     }
 
     /**
@@ -28,26 +43,61 @@ class ParkirController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            // add validation rules as needed
+            'id_kendaraan' => 'required|exists:tb_kendaraan,id_kendaraan',
+            'id_tarif' => 'required|exists:tb_tarif,id_tarif',
+            'id_area' => 'required|exists:tb_area_parkir,id_area',
         ]);
 
-        // TODO: implement storing logic (model creation)
+        try {
+            $transaksi = Transaksi::create([
+                'id_kendaraan' => $request->id_kendaraan,
+                'id_tarif' => $request->id_tarif,
+                'id_area' => $request->id_area,
+                'id_user' => Auth::id(),
+                'waktu_masuk' => Carbon::now(),
+                'status' => 'masuk',
+            ]);
 
-        return redirect()->route('parkir.index')->with('success', 'Entry created.');
+            return redirect()->route('parkir.index')
+                ->with('success', 'Kendaraan berhasil dicatat masuk parkir');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mencatat transaksi: ' . $e->getMessage());
+        }
     }
 
     /**
-     * Update the specified resource.
+     * Update the specified resource (checkout/keluar).
      */
     public function update(Request $request, $id)
     {
         $request->validate([
-            // add validation rules as needed
+            // Validation rules can be added if needed
         ]);
 
-        // TODO: implement update logic
+        try {
+            $transaksi = Transaksi::findOrFail($id);
+            
+            if ($transaksi->status === 'keluar') {
+                return back()->with('error', 'Kendaraan ini sudah tercatat keluar');
+            }
 
-        return redirect()->route('parkir.index')->with('success', 'Entry updated.');
+            // Calculate duration and cost
+            $waktu_keluar = Carbon::now();
+            $durasi_jam = ceil($waktu_keluar->diffInMinutes($transaksi->waktu_masuk) / 60);
+            $biaya_total = $durasi_jam * $transaksi->tarif->tarif_perjam;
+
+            $transaksi->update([
+                'waktu_keluar' => $waktu_keluar,
+                'durasi_jam' => $durasi_jam,
+                'biaya_total' => $biaya_total,
+                'status' => 'keluar',
+            ]);
+
+            return redirect()->route('payment.create', $transaksi->id_parkit)
+                ->with('success', 'Kendaraan berhasil dicatat keluar. Silakan lanjut ke pembayaran');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal update transaksi: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -55,6 +105,8 @@ class ParkirController extends Controller
      */
     public function print($id)
     {
-        return view('parkir.receipt', compact('id'));
+        $transaksi = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])->findOrFail($id);
+        
+        return view('parkir.receipt', compact('transaksi'));
     }
 }
