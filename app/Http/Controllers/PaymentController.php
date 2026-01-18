@@ -44,14 +44,16 @@ class PaymentController extends Controller
      */
     public function manual_process(Request $request, $id_parkit)
     {
+        $transaksi = Transaksi::findOrFail($id_parkit);
+
         $request->validate([
-            'nominal' => 'required|numeric|min:0',
+            'nominal' => 'required|numeric|min:' . ($transaksi->biaya_total ?? 0),
             'keterangan' => 'nullable|string|max:500',
+        ], [
+            'nominal.min' => 'Nominal pembayaran harus minimal Rp ' . number_format($transaksi->biaya_total ?? 0, 0, ',', '.'),
         ]);
 
         try {
-            $transaksi = Transaksi::findOrFail($id_parkit);
-
             if ($transaksi->status_pembayaran === 'sudah_bayar') {
                 return back()->with('error', 'Transaksi ini sudah dibayar');
             }

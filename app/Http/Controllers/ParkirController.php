@@ -49,6 +49,13 @@ class ParkirController extends Controller
         ]);
 
         try {
+            $area = AreaParkir::findOrFail($request->id_area);
+            
+            // Check kapasitas
+            if ($area->terisi >= $area->kapasitas) {
+                return back()->with('error', 'Kapasitas area parkir sudah penuh');
+            }
+
             $transaksi = Transaksi::create([
                 'id_kendaraan' => $request->id_kendaraan,
                 'id_tarif' => $request->id_tarif,
@@ -57,6 +64,9 @@ class ParkirController extends Controller
                 'waktu_masuk' => Carbon::now(),
                 'status' => 'masuk',
             ]);
+
+            // Update kapasitas
+            $area->increment('terisi');
 
             return redirect()->route('parkir.index')
                 ->with('success', 'Kendaraan berhasil dicatat masuk parkir');
@@ -92,6 +102,12 @@ class ParkirController extends Controller
                 'biaya_total' => $biaya_total,
                 'status' => 'keluar',
             ]);
+
+            // Decrement kapasitas area
+            $area = AreaParkir::findOrFail($transaksi->id_area);
+            if ($area->terisi > 0) {
+                $area->decrement('terisi');
+            }
 
             return redirect()->route('payment.create', $transaksi->id_parkit)
                 ->with('success', 'Kendaraan berhasil dicatat keluar. Silakan lanjut ke pembayaran');

@@ -23,11 +23,11 @@ class KendaraanController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'plat_nomor' => 'required|string|max:15',
+            'plat_nomor' => 'required|string|max:15|unique:tb_kendaraan,plat_nomor',
             'jenis_kendaraan' => 'required|string|max:20',
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
-            'id_user' => 'required|integer',
+            'id_user' => 'required|exists:tb_user,id',
         ]);
 
         Kendaraan::create($data);
@@ -46,11 +46,11 @@ class KendaraanController extends Controller
     {
         $item = Kendaraan::findOrFail($id);
         $data = $request->validate([
-            'plat_nomor' => 'required|string|max:15',
+            'plat_nomor' => 'required|string|max:15|unique:tb_kendaraan,plat_nomor,' . $id . ',id_kendaraan',
             'jenis_kendaraan' => 'required|string|max:20',
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
-            'id_user' => 'required|integer',
+            'id_user' => 'required|exists:tb_user,id',
         ]);
 
         $item->update($data);

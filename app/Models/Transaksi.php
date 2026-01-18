@@ -56,21 +56,33 @@ class Transaksi extends Model
     // Accessors & Mutators
     public function getDurasiJamAttribute()
     {
+        // Jika sudah ada value di database, gunakan itu
+        if ($this->attributes['durasi_jam'] ?? null) {
+            return $this->attributes['durasi_jam'];
+        }
+
+        // Jika belum ada, hitung dari waktu masuk dan keluar
         if ($this->waktu_masuk && $this->waktu_keluar) {
             $masuk = \Carbon\Carbon::parse($this->waktu_masuk);
             $keluar = \Carbon\Carbon::parse($this->waktu_keluar);
             return ceil($keluar->diffInMinutes($masuk) / 60);
         }
-        return $this->attributes['durasi_jam'] ?? null;
+        return null;
     }
 
     public function getBiayaTotalAttribute()
     {
+        // Jika sudah ada value di database, gunakan itu
+        if ($this->attributes['biaya_total'] ?? null) {
+            return $this->attributes['biaya_total'];
+        }
+
+        // Jika belum ada, hitung dari durasi dan tarif
         if ($this->waktu_masuk && $this->waktu_keluar && $this->tarif) {
             $durasi = $this->getDurasiJamAttribute();
             $tarif_perjam = $this->tarif->tarif_perjam;
             return $durasi * $tarif_perjam;
         }
-        return $this->attributes['biaya_total'] ?? 0;
+        return 0;
     }
 }

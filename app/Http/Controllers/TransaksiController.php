@@ -31,11 +31,11 @@ class TransaksiController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_kendaraan' => 'required|integer',
+            'id_kendaraan' => 'required|exists:tb_kendaraan,id_kendaraan',
             'waktu_masuk' => 'required|date',
-            'id_tarif' => 'required|integer',
-            'id_user' => 'required|integer',
-            'id_area' => 'required|integer',
+            'id_tarif' => 'required|exists:tb_tarif,id_tarif',
+            'id_user' => 'required|exists:tb_user,id',
+            'id_area' => 'required|exists:tb_area_parkir,id_area',
             'status' => 'required|in:masuk,keluar',
         ]);
 

@@ -21,7 +21,7 @@ class AreaParkirController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nama_area' => 'required|string|max:50',
+            'nama_area' => 'required|string|max:50|unique:tb_area_parkir,nama_area',
             'kapasitas' => 'required|integer|min:1',
         ]);
 
@@ -40,7 +40,7 @@ class AreaParkirController extends Controller
     {
         $area = AreaParkir::findOrFail($id);
         $data = $request->validate([
-            'nama_area' => 'required|string|max:50',
+            'nama_area' => 'required|string|max:50|unique:tb_area_parkir,nama_area,' . $id . ',id_area',
             'kapasitas' => 'required|integer|min:1',
         ]);
         $area->update($data);

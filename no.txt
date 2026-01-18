@@ -1,0 +1,12 @@
+BUG DITEMUKAN - Website memiliki beberapa bug signifikan:
+
+1. MIGRATION ISSUE: File pembayarans.php adalah migration kosong yang berpotensi error
+2. DATA CONSISTENCY: Durasi jam & biaya total inconsistent antara accessor dan database
+3. FOREIGN KEY: Tidak ada validasi proper untuk kendaraan yang di-assign ke user
+4. CONTROLLER LOGIC: TransaksiController update tidak enforce constrain yang seharusnya
+5. MISSING LOGGING: LogAktifitas tidak auto-track setiap CRUD operation
+6. PAYMENT VALIDATION: Tidak ada validasi nominal pembayaran >= biaya total
+7. CAPACITY TRACKING: Area parkir tidak track kapasitas terisi secara real-time
+8. TARIF ENUM MISMATCH: Controller tidak validate enum tipe kendaraan dengan proper
+
+Status: TIDAK SIAP PRODUCTION

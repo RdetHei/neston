@@ -21,8 +21,8 @@ class TarifController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'jenis_kendaraan' => 'required|string',
-            'tarif_perjam' => 'required|numeric',
+            'jenis_kendaraan' => 'required|in:motor,mobil,lainnya',
+            'tarif_perjam' => 'required|numeric|min:0',
         ]);
 
         Tarif::create($data);
@@ -39,8 +39,8 @@ class TarifController extends Controller
     {
         $item = Tarif::findOrFail($id);
         $data = $request->validate([
-            'jenis_kendaraan' => 'required|string',
-            'tarif_perjam' => 'required|numeric',
+            'jenis_kendaraan' => 'required|in:motor,mobil,lainnya',
+            'tarif_perjam' => 'required|numeric|min:0',
         ]);
         $item->update($data);
         return redirect()->route('tarif.index')->with('success','Tarif updated');
