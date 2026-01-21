@@ -33,7 +33,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @forelse ($transaksis as $transaksi)
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            <tr class="hover:bg-gray-50 transition-colors" id="row-{{ $transaksi->id_parkir }}" data-transaksi-id="{{ $transaksi->id_parkir }}">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm font-semibold text-gray-900">#{{ $transaksi->id_parkir }}</span>
                                 </td>
@@ -116,4 +116,33 @@
 
         </div>
     </div>
+
+    <script>
+        // Auto-refresh transaksi list setiap 2 detik untuk mendeteksi pembayaran yang baru selesai
+        function refreshTransactionList() {
+            fetch('{{ route('payment.select-transaction') }}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Parse HTML response untuk mendapat list transaksi baru
+                const parser = new DOMParser();
+                const newDoc = parser.parseFromString(html, 'text/html');
+                const newRows = newDoc.querySelectorAll('tbody tr[data-transaksi-id]');
+                const currentRows = document.querySelectorAll('tbody tr[data-transaksi-id]');
+                
+                // Jika jumlah row berkurang, refresh halaman
+                if (newRows.length < currentRows.length) {
+                    location.reload();
+                }
+            })
+            .catch(error => console.log('Auto-refresh error (non-critical):', error));
+        }
+
+        // Poll setiap 2 detik
+        setInterval(refreshTransactionList, 2000);
+    </script>
 @endsection

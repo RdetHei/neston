@@ -20,8 +20,9 @@ class PaymentController extends Controller
         // Hanya ambil transaksi yang sedang 'masuk' dan belum dibayar
         $transaksis = Transaksi::where('status', 'masuk')
             ->where(function($q) {
+                // Tampilkan transaksi yang belum memiliki status pembayaran atau belum bayar
                 $q->whereNull('status_pembayaran')
-                  ->orWhere('status_pembayaran', '<>', 'sudah_bayar');
+                  ->orWhere('status_pembayaran', '!=', 'sudah_bayar');
             })
             ->with(['kendaraan', 'tarif', 'user', 'area'])
             ->orderBy('waktu_masuk', 'desc')
