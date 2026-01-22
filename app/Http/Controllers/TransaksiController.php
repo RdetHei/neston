@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\AreaParkir;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller
 {
@@ -17,7 +18,7 @@ class TransaksiController extends Controller
 
     /**
      * Menangani proses kendaraan masuk (check-in).
-     * Logika ini dipindahkan dari ParkirController@store
+     * Menggunakan transaction untuk mencegah race condition
      */
     public function checkIn(Request $request)
     {
@@ -25,71 +26,85 @@ class TransaksiController extends Controller
             'id_kendaraan' => 'required|exists:tb_kendaraan,id_kendaraan',
             'id_tarif' => 'required|exists:tb_tarif,id_tarif',
             'id_area' => 'required|exists:tb_area_parkir,id_area',
+            'catatan' => 'nullable|string|max:255',
         ]);
 
         try {
-            $area = AreaParkir::findOrFail($request->id_area);
+            // Use transaction untuk atomic operation
+            $transaksi = DB::transaction(function () use ($request) {
+                // Lock area parkir untuk prevent race condition
+                $area = AreaParkir::lockForUpdate()->findOrFail($request->id_area);
 
-            // Cek kapasitas
-            if ($area->terisi >= $area->kapasitas) {
-                return back()->with('error', 'Kapasitas area parkir sudah penuh');
-            }
+                // Cek kapasitas dengan lock
+                if ($area->terisi >= $area->kapasitas) {
+                    throw new \Exception('Kapasitas area parkir sudah penuh');
+                }
 
-            $transaksi = Transaksi::create([
-                'id_kendaraan' => $request->id_kendaraan,
-                'id_tarif' => $request->id_tarif,
-                'id_area' => $request->id_area,
-                'id_user' => Auth::id(),
-                'waktu_masuk' => Carbon::now(),
-                'status' => 'masuk',
-            ]);
+                // Buat transaksi
+                $transaksi = Transaksi::create([
+                    'id_kendaraan' => $request->id_kendaraan,
+                    'id_tarif' => $request->id_tarif,
+                    'id_area' => $request->id_area,
+                    'id_user' => Auth::id(),
+                    'waktu_masuk' => Carbon::now(),
+                    'status' => 'masuk',
+                    'catatan' => $request->catatan,
+                    'status_pembayaran' => null,
+                ]);
 
-            // Update kapasitas area parkir
-            $area->increment('terisi');
+                // Update kapasitas dengan atomic increment
+                $area->increment('terisi');
 
-            return redirect()->route('transaksi.index') // Arahkan ke daftar transaksi aktif
-                ->with('success', 'Kendaraan berhasil dicatat masuk parkir.');
+                return $transaksi;
+            });
+
+            return redirect()->route('transaksi.parkir.index')
+                ->with('success', 'Kendaraan berhasil dicatat masuk parkir. ID Transaksi: ' . $transaksi->id_parkir);
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mencatat transaksi: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Gagal mencatat transaksi: ' . $e->getMessage());
         }
     }
 
     /**
      * Menangani proses kendaraan keluar (check-out).
-     * Logika ini dipindahkan dari ParkirController@update
+     * Menggunakan transaction untuk atomic operation
      */
     public function checkOut(Request $request, $id)
     {
         try {
-            $transaksi = Transaksi::findOrFail($id);
+            DB::transaction(function () use ($id) {
+                $transaksi = Transaksi::lockForUpdate()->findOrFail($id);
 
-            if ($transaksi->status === 'keluar') {
-                return back()->with('error', 'Kendaraan ini sudah tercatat keluar.');
-            }
+                // Validasi status
+                if ($transaksi->status === 'keluar') {
+                    throw new \Exception('Kendaraan ini sudah tercatat keluar.');
+                }
 
-            // Kalkulasi durasi dan biaya
-            $waktu_keluar = Carbon::now();
-            $durasi_jam = ceil($waktu_keluar->diffInMinutes($transaksi->waktu_masuk) / 60);
-            $biaya_total = $durasi_jam * $transaksi->tarif->tarif_perjam;
+                // Kalkulasi durasi dan biaya
+                $waktu_keluar = Carbon::now();
+                $durasi_jam = ceil($waktu_keluar->diffInMinutes($transaksi->waktu_masuk) / 60);
+                $biaya_total = $durasi_jam * $transaksi->tarif->tarif_perjam;
 
-            $transaksi->update([
-                'waktu_keluar' => $waktu_keluar,
-                'durasi_jam' => $durasi_jam,
-                'biaya_total' => $biaya_total,
-                'status' => 'keluar',
-            ]);
+                // Update transaksi
+                $transaksi->update([
+                    'waktu_keluar' => $waktu_keluar,
+                    'durasi_jam' => $durasi_jam,
+                    'biaya_total' => $biaya_total,
+                    'status' => 'keluar',
+                    'status_pembayaran' => 'pending', // Status default saat checkout
+                ]);
 
-            // Kurangi kapasitas terisi di area parkir
-            $area = AreaParkir::findOrFail($transaksi->id_area);
-            if ($area->terisi > 0) {
-                $area->decrement('terisi');
-            }
+                // Decrement kapasitas area parkir dengan lock
+                $area = AreaParkir::lockForUpdate()->findOrFail($transaksi->id_area);
+                if ($area->terisi > 0) {
+                    $area->decrement('terisi');
+                }
+            });
 
-            // Arahkan ke halaman pembuatan pembayaran
-            return redirect()->route('payment.create', $transaksi->id_parkir)
+            return redirect()->route('payment.select-transaction')
                 ->with('success', 'Kendaraan berhasil checkout. Silakan lanjut ke pembayaran.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal update transaksi: ' . $e->getMessage());
+            return back()->with('error', 'Gagal checkout: ' . $e->getMessage());
         }
     }
 
@@ -97,29 +112,19 @@ class TransaksiController extends Controller
 
     public function index()
     {
-        $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
-            ->orderBy('id_parkir','desc')
-            ->paginate(15);
-
         // Filter untuk menampilkan view yang berbeda (opsional)
         if (request()->has('status') && request('status') == 'masuk') {
             $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
                 ->where('status', 'masuk')
                 ->orderBy('waktu_masuk', 'desc')
                 ->paginate(15);
-            return view('parkir.index', ['transaksis' => $items]); // Menggunakan view parkir.index untuk transaksi aktif
+            return view('parkir.index', ['transaksis' => $items]);
         }
 
-        return view('transaksi.index', compact('items'));
-    }
-
-    public function create()
-    {
-        $kendaraans = Kendaraan::orderBy('plat_nomor')->get();
-        $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
-        $users = User::orderBy('name')->get();
-        $areas = AreaParkir::orderBy('nama_area')->get();
-        return view('transaksi.create', compact('kendaraans','tarifs','users','areas'));
+        $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
+            ->orderBy('id_parkir','desc')
+            ->paginate(15);
+        return view('transaksi.index', ['transaksis' => $items]);
     }
 
     public function store(Request $request)
@@ -131,6 +136,7 @@ class TransaksiController extends Controller
             'id_user' => 'required|exists:tb_user,id',
             'id_area' => 'required|exists:tb_area_parkir,id_area',
             'status' => 'required|in:masuk,keluar',
+            'catatan' => 'nullable|string|max:255',
         ]);
 
         Transaksi::create($data);

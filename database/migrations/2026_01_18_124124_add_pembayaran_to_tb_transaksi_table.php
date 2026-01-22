@@ -12,9 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tb_transaksi', function (Blueprint $table) {
-            $table->enum('status_pembayaran', ['belum_bayar', 'sudah_bayar'])->default('belum_bayar')->after('status');
-            $table->unsignedBigInteger('id_pembayaran')->nullable()->after('status_pembayaran');
-            $table->foreign('id_pembayaran')->references('id_pembayaran')->on('tb_pembayaran')->onDelete('set null');
+            // Ubah status_pembayaran enum ke status yang consistent dengan Pembayaran
+            if (Schema::hasColumn('tb_transaksi', 'status_pembayaran')) {
+                $table->dropColumn('status_pembayaran');
+            }
+
+            $table->enum('status_pembayaran', ['pending', 'berhasil', 'gagal'])->default('pending')->after('status');
+
+            if (!Schema::hasColumn('tb_transaksi', 'id_pembayaran')) {
+                $table->unsignedBigInteger('id_pembayaran')->nullable()->after('status_pembayaran');
+                $table->foreign('id_pembayaran')->references('id_pembayaran')->on('tb_pembayaran')->onDelete('set null');
+            }
         });
     }
 

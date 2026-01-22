@@ -46,17 +46,17 @@
             <p class="text-gray-600 mb-4">Petugas parkir akan memproses pembayaran secara manual</p>
             <ul class="space-y-2 text-sm text-gray-700 mb-6">
                 <li class="flex items-center gap-2">
-                    <span class="text-green-600">✓</span> Petugas input nominal pembayaran
+                    <span class="text-green-600">•</span> Petugas input nominal pembayaran
                 </li>
                 <li class="flex items-center gap-2">
-                    <span class="text-green-600">✓</span> Fleksibel dengan berbagai metode
+                    <span class="text-green-600">•</span> Fleksibel dengan berbagai metode
                 </li>
                 <li class="flex items-center gap-2">
-                    <span class="text-green-600">✓</span> Dapat diskon atau promosi
+                    <span class="text-green-600">•</span> Dapat diskon atau promosi
                 </li>
             </ul>
             <div class="bg-purple-50 p-3 rounded text-purple-900 font-semibold text-center">
-                Lanjut ke Pembayaran Manual →
+                Lanjut ke Pembayaran Manual
             </div>
         </div>
 
@@ -75,17 +75,17 @@
             <p class="text-gray-600 mb-4">Pengendara langsung scan QR untuk membayar otomatis</p>
             <ul class="space-y-2 text-sm text-gray-700 mb-6">
                 <li class="flex items-center gap-2">
-                    <span class="text-green-600">✓</span> Cepat & otomatis
+                    <span class="text-green-600">•</span> Cepat & otomatis
                 </li>
                 <li class="flex items-center gap-2">
-                    <span class="text-green-600">✓</span> Tidak perlu antri
+                    <span class="text-green-600">•</span> Tidak perlu antri
                 </li>
                 <li class="flex items-center gap-2">
-                    <span class="text-green-600">✓</span> Riwayat digital otomatis
+                    <span class="text-green-600">•</span> Riwayat digital otomatis
                 </li>
             </ul>
             <div class="bg-green-50 p-3 rounded text-green-900 font-semibold text-center">
-                Lanjut ke QR Scan →
+                Lanjut ke QR Scan
             </div>
         </div>
     </div>
@@ -93,7 +93,7 @@
     <!-- Tombol Kembali -->
     <div class="flex justify-center mt-8">
         <a href="{{ route('transaksi.parkir.index') }}" class="text-gray-600 hover:text-gray-800">
-            ← Kembali ke Dashboard
+            Kembali ke Dashboard
         </a>
     </div>
 </div>

@@ -102,7 +102,7 @@
             </a>
             <a href="{{ route('transaksi.parkir.index') }}"
                class="flex-1 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold text-center">
-                ← Kembali ke Dashboard
+                Kembali ke Dashboard
             </a>
         </div>
     </div>

@@ -68,12 +68,12 @@
             <div class="flex gap-3">
                 <a href="{{ route('payment.create', $transaksi->id_parkir) }}" 
                    class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-semibold text-center">
-                    ← Kembali
+                    Kembali
                 </a>
                 <button type="submit" 
                         class="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
                         onclick="return confirm('Konfirmasi pembayaran sebesar Rp ' + document.querySelector('input[name=nominal]').value + '?')">
-                    ✓ Konfirmasi Pembayaran
+                    Konfirmasi Pembayaran
                 </button>
             </div>
         </form>

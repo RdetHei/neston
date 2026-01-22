@@ -49,7 +49,7 @@
                     </td>
                     <td class="px-6 py-4 text-sm">
                         @if($pembayaran->status === 'berhasil')
-                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">✓ Berhasil</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">Berhasil</span>
                         @elseif($pembayaran->status === 'pending')
                             <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">⏱ Pending</span>
                         @else

@@ -13,4 +13,14 @@ class LogAktifitas extends Model
         'aktivitas',
         'waktu_aktivitas',
     ];
+
+    protected $casts = [
+        'waktu_aktivitas' => 'datetime',
+    ];
+
+    // Relationships
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id_user', 'id');
+    }
 }

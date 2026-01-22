@@ -28,7 +28,7 @@
         <!-- Status -->
         <div id="payment-status" class="mb-6 hidden">
             <div class="bg-green-50 border-2 border-green-300 p-4 rounded-lg text-center">
-                <p class="text-green-700 font-bold">✓ Pembayaran Berhasil!</p>
+                <p class="text-green-700 font-bold">Pembayaran Berhasil!</p>
                 <p class="text-green-600 text-sm mt-2" id="status-message"></p>
             </div>
         </div>
@@ -78,7 +78,7 @@
         <div class="flex gap-3">
             <a href="{{ route('payment.create', $transaksi->id_parkir) }}" 
                class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-semibold text-center">
-                ← Ganti Metode
+                Ganti Metode
             </a>
         </div>
     </div>

@@ -6,7 +6,7 @@
 <div class="max-w-4xl mx-auto px-4">
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-3xl font-bold text-gray-800">Detail Transaksi #{{ str_pad($item->id_parkir, 8, '0', STR_PAD_LEFT) }}</h2>
-        <a href="{{ route('transaksi.index') }}" class="text-gray-600 hover:text-gray-800">← Kembali</a>
+        <a href="{{ route('transaksi.index') }}" class="text-gray-600 hover:text-gray-800">Kembali</a>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -52,6 +52,10 @@
                 <div>
                     <p class="text-sm text-gray-600">Tarif per Jam</p>
                     <p class="text-lg font-semibold text-gray-800">Rp {{ number_format($item->tarif->tarif_perjam ?? 0, 0, ',', '.') }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Catatan</p>
+                    <p class="text-lg font-semibold text-gray-800">{{ $item->catatan ?? '-' }}</p>
                 </div>
             </div>
         </div>

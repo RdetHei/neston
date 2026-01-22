@@ -12,7 +12,7 @@ class PembayaranSeeder extends Seeder
     public function run(): void
     {
         // Create pembayaran for transaksi that were marked as paid
-        $paidTx = Transaksi::where('status_pembayaran','sudah_bayar')->get();
+        $paidTx = Transaksi::where('status_pembayaran','berhasil')->get();
         foreach ($paidTx as $tx) {
             $p = Pembayaran::create([
                 'id_parkir' => $tx->id_parkir,
@@ -29,7 +29,7 @@ class PembayaranSeeder extends Seeder
         }
 
         // Optionally create a pending payment for a specific transaction
-        $pendingTx = Transaksi::where('status_pembayaran','belum_bayar')->first();
+        $pendingTx = Transaksi::where('status_pembayaran','pending')->first();
         if ($pendingTx) {
             Pembayaran::create([
                 'id_parkir' => $pendingTx->id_parkir,

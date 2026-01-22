@@ -60,12 +60,18 @@
             @error('id_area')<div class="text-red-600 text-sm mt-1">{{ $message }}</div>@enderror
         </div>
 
+        <div class="mb-5">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Catatan (Opsional)</label>
+            <textarea name="catatan" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">{{ old('catatan') }}</textarea>
+            @error('catatan')<div class="text-red-600 text-sm mt-1">{{ $message }}</div>@enderror
+        </div>
+
         <div class="flex justify-end gap-3 pt-6 border-t">
             <a href="{{ route('transaksi.parkir.index') }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                ← Batal
+                Batal
             </a>
             <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                ✓ Catat Masuk
+                Catat Masuk
             </button>
         </div>
     </form>

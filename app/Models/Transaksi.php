@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Transaksi extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'tb_transaksi';
     protected $primaryKey = 'id_parkir';
     protected $fillable = [
@@ -16,6 +19,7 @@ class Transaksi extends Model
         'durasi_jam',
         'biaya_total',
         'status',
+        'catatan',
         'id_user',
         'id_area',
         'status_pembayaran',

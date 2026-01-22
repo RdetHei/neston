@@ -17,15 +17,15 @@ class PaymentController extends Controller
      */
     public function selectTransaction()
     {
-        // Hanya ambil transaksi yang sedang 'masuk' dan belum dibayar
-        $transaksis = Transaksi::where('status', 'masuk')
+        // Hanya ambil transaksi yang sudah checkout (status 'keluar') dan pembayaran pending
+        $transaksis = Transaksi::where('status', 'keluar')
             ->where(function($q) {
-                // Tampilkan transaksi yang belum memiliki status pembayaran atau belum bayar
+                // Tampilkan transaksi dengan status pembayaran pending atau belum ada
                 $q->whereNull('status_pembayaran')
-                  ->orWhere('status_pembayaran', '!=', 'sudah_bayar');
+                  ->orWhere('status_pembayaran', '!=', 'berhasil');
             })
             ->with(['kendaraan', 'tarif', 'user', 'area'])
-            ->orderBy('waktu_masuk', 'desc')
+            ->orderBy('waktu_keluar', 'desc')
             ->get();
 
         return view('payment.select-transaction', compact('transaksis'));
@@ -39,8 +39,8 @@ class PaymentController extends Controller
         $transaksi = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
             ->findOrFail($id_parkir);
 
-        // Cek apakah sudah ada pembayaran
-        if ($transaksi->status_pembayaran === 'sudah_bayar') {
+        // Cek apakah sudah ada pembayaran berhasil
+        if ($transaksi->status_pembayaran === 'berhasil') {
             return back()->with('error', 'Transaksi ini sudah dibayar');
         }
 
@@ -57,7 +57,7 @@ class PaymentController extends Controller
         $transaksi = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
             ->findOrFail($id_parkir);
 
-        if ($transaksi->status_pembayaran === 'sudah_bayar') {
+        if ($transaksi->status_pembayaran === 'berhasil') {
             return back()->with('error', 'Transaksi ini sudah dibayar');
         }
 
@@ -79,7 +79,7 @@ class PaymentController extends Controller
         ]);
 
         try {
-            if ($transaksi->status_pembayaran === 'sudah_bayar') {
+            if ($transaksi->status_pembayaran === 'berhasil') {
                 return back()->with('error', 'Transaksi ini sudah dibayar');
             }
 
@@ -97,7 +97,7 @@ class PaymentController extends Controller
 
                 // Update transaksi
                 $transaksi->update([
-                    'status_pembayaran' => 'sudah_bayar',
+                    'status_pembayaran' => 'berhasil',
                     'id_pembayaran' => $pembayaran->id_pembayaran,
                 ]);
             });
@@ -118,7 +118,7 @@ class PaymentController extends Controller
         $transaksi = Transaksi::with(['kendaraan', 'tarif'])
             ->findOrFail($id_parkir);
 
-        if ($transaksi->status_pembayaran === 'sudah_bayar') {
+        if ($transaksi->status_pembayaran === 'berhasil') {
             return back()->with('error', 'Transaksi ini sudah dibayar');
         }
 
@@ -133,7 +133,7 @@ class PaymentController extends Controller
         try {
             $transaksi = Transaksi::findOrFail($id_parkir);
 
-            if ($transaksi->status_pembayaran === 'sudah_bayar') {
+            if ($transaksi->status_pembayaran === 'berhasil') {
                 return response()->json([
                     'success' => false,
                     'message' => 'Transaksi ini sudah dibayar'
@@ -155,7 +155,7 @@ class PaymentController extends Controller
 
                 // Update transaksi
                 $transaksi->update([
-                    'status_pembayaran' => 'sudah_bayar',
+                    'status_pembayaran' => 'berhasil',
                     'id_pembayaran' => $pembayaran->id_pembayaran,
                 ]);
             });

@@ -1,0 +1,71 @@
+# Activity Diagram for Vehicle Check-in and Check-out Process
+
+## Main Flow: Vehicle Check-in
+
+1.  **Actor:** Petugas
+2.  **Action:** Access "Catat Kendaraan Masuk" (Record Vehicle Entry) interface.
+3.  **System:** Display Check-in form.
+4.  **Actor:** Petugas
+5.  **Action:** Select `id_kendaraan`, `id_tarif`, `id_area`. (Optionally, input `catatan`).
+6.  **System:** Validate input.
+    -   *If invalid:* Display error message.
+    -   *If valid:* Proceed.
+7.  **System:** Begin Database Transaction.
+8.  **System:** Lock selected `AreaParkir` for update.
+9.  **System:** Check `AreaParkir` capacity (`terisi` < `kapasitas`).
+    -   *If full:* Rollback transaction, display "Kapasitas area parkir penuh" error.
+    -   *If available:* Proceed.
+10. **System:** Create new `Transaksi` record with `waktu_masuk` (current time), `status='masuk'`, `id_user` (Petugas), and `catatan` (if provided).
+11. **System:** Increment `terisi` count for `AreaParkir`.
+12. **System:** Commit Database Transaction.
+13. **System:** Redirect to "Parkir Aktif" list with success message.
+14. **End of Check-in Flow.**
+
+---
+
+## Main Flow: Vehicle Check-out and Payment
+
+1.  **Actor:** Petugas
+2.  **Action:** Access "Parkir Aktif" (Active Parking) list.
+3.  **System:** Display list of active `Transaksi`.
+4.  **Actor:** Petugas
+5.  **Action:** Select a `Transaksi` to check-out.
+6.  **System:** Prompt confirmation "Catat kendaraan keluar?".
+    -   *If cancel:* Return to active parking list.
+    -   *If confirm:* Proceed.
+7.  **System:** Begin Database Transaction.
+8.  **System:** Lock selected `Transaksi` for update.
+9.  **System:** Validate `Transaksi` status (`status='masuk'`).
+    -   *If status already 'keluar':* Rollback transaction, display "Kendaraan ini sudah tercatat keluar" error.
+    -   *If status is 'masuk':* Proceed.
+10. **System:** Calculate `durasi_jam` (from `waktu_masuk` to current time).
+11. **System:** Calculate `biaya_total` (`durasi_jam` * `tarif_perjam`).
+12. **System:** Update `Transaksi` record: Set `waktu_keluar` (current time), `durasi_jam`, `biaya_total`, `status='keluar'`, `status_pembayaran='pending'`.
+13. **System:** Decrement `terisi` count for associated `AreaParkir`.
+14. **System:** Commit Database Transaction.
+15. **System:** Redirect to "Pilih Transaksi untuk Pembayaran" (Select Transaction for Payment) interface with success message.
+16. **Actor:** Petugas
+17. **Action:** Select the `Transaksi` for payment processing.
+18. **System:** Display Payment Options (Manual, QR Scan).
+19. **Actor:** Petugas
+20. **Action:** Choose a payment method.
+
+    *   **Sub-flow: Manual Payment Confirmation**
+        1.  **Actor:** Petugas
+        2.  **Action:** Confirm manual payment.
+        3.  **System:** Create `Pembayaran` record: `id_parkir`, `nominal` (`biaya_total` from `Transaksi`), `metode='manual'`, `status='berhasil'`, `id_user` (Petugas), `waktu_pembayaran` (current time).
+        4.  **System:** Update `Transaksi`: `status_pembayaran='berhasil'`, `id_pembayaran` (link to new `Pembayaran` record).
+        5.  **System:** Redirect to "Pembayaran Berhasil" page.
+
+    *   **Sub-flow: QR Scan Payment**
+        1.  **Actor:** Petugas
+        2.  **Action:** Initiate QR scan (e.g., display QR code or activate scanner).
+        3.  **System:** Integrate with external Payment System to generate/read QR code.
+        4.  **Sistem Pembayaran (External):** Process payment.
+        5.  **System:** Receive payment confirmation from external system.
+            -   *If payment successful:*
+                1.  **System:** Create `Pembayaran` record: `id_parkir`, `nominal`, `metode='qr_scan'`, `status='berhasil'`, `id_user` (Petugas), `waktu_pembayaran` (current time).
+                2.  **System:** Update `Transaksi`: `status_pembayaran='berhasil'`, `id_pembayaran` (link to new `Pembayaran` record).
+                3.  **System:** Redirect to "Pembayaran Berhasil" page.
+            -   *If payment failed:* Display error, allow retry or switch method.
+21. **End of Check-out and Payment Flow.**

@@ -52,6 +52,6 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        return redirect('/parkir');
+        return redirect()->route('transaksi.parkir.index');
     }
 }

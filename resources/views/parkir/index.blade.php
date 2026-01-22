@@ -35,6 +35,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu Masuk</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durasi</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operator</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catatan</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                 </tr>
             </thead>
@@ -66,6 +67,9 @@
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-700">
                         {{ $transaksi->user->name ?? '-' }}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-700">
+                        {{ $transaksi->catatan ?? '-' }}
                     </td>
                     <td class="px-6 py-4 text-sm space-x-2">
                         <form action="{{ route('transaksi.checkOut', $transaksi->id_parkir) }}" method="POST" class="inline">

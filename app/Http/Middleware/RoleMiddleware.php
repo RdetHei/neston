@@ -10,9 +10,9 @@ class RoleMiddleware
 {
     /**
      * Handle an incoming request.
-     * Usage: ->middleware(['auth','role:admin'])
+     * Usage: ->middleware(['auth','role:admin']) or ->middleware(['auth','role:admin,petugas'])
      */
-    public function handle(Request $request, Closure $next, string $role)
+    public function handle(Request $request, Closure $next, string $roles)
     {
         if (! Auth::check()) {
             return redirect()->route('login.create');
@@ -20,8 +20,12 @@ class RoleMiddleware
 
         $user = Auth::user();
 
-        if ($user->role !== $role) {
-            abort(403, 'Unauthorized');
+        // Split roles by comma and trim whitespace
+        $allowedRoles = array_map('trim', explode(',', $roles));
+
+        // Check if user's role is in allowed roles
+        if (!in_array($user->role, $allowedRoles)) {
+            abort(403, 'Unauthorized - Insufficient permissions');
         }
 
         return $next($request);
