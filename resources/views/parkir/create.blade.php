@@ -3,11 +3,6 @@
 @section('title', 'Catat Kendaraan Masuk')
 
 @section('content')
-@extends('layouts.app')
-
-@section('title', 'Catat Kendaraan Masuk')
-
-@section('content')
 <div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
     <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Catat Kendaraan Masuk</h2>
 

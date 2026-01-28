@@ -3,7 +3,7 @@
 @section('title','Kendaraan')
 
 @section('content')
-<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+<div class="p-4 sm:p-6 lg:p-8">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
@@ -40,7 +40,7 @@
     @endif
 
     <!-- Card Container -->
-    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
         <!-- Card Header -->
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div class="flex items-center justify-between">
@@ -50,25 +50,25 @@
         </div>
 
         <!-- Table -->
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Plat Nomor</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Warna</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pemilik</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @forelse($items as $item)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
+        @if($items->count())
+        <table class="w-full table-auto divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plat Nomor</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Warna</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pemilik</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($items as $item)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm">
                                 <span class="text-sm font-semibold text-gray-900">#{{ $item->id_kendaraan }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 <div class="flex items-center gap-3">
                                     @php
                                         $vehicleConfig = [
@@ -88,7 +88,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 @php
                                     $jenisColors = [
                                         'motor' => 'bg-blue-100 text-blue-800',
@@ -100,7 +100,7 @@
                                     {{ ucfirst($item->jenis_kendaraan) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 @if($item->warna)
                                     <div class="flex items-center gap-2">
                                         <div class="w-4 h-4 rounded-full border-2 border-gray-300" style="background-color: {{ $item->warna }}"></div>
@@ -110,7 +110,7 @@
                                     <span class="text-sm text-gray-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 <div class="flex items-center gap-2">
                                     <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                                         {{ strtoupper(substr($item->pemilik ?? 'N', 0, 1)) }}
@@ -123,7 +123,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm space-x-2">
                                 <div class="flex items-center gap-2">
                                     <!-- Edit Button -->
                                     <a href="{{ route('kendaraan.edit', $item) }}"
@@ -149,30 +149,17 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-12">
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
-                                        </svg>
-                                    </div>
-                                    <p class="text-gray-900 font-semibold mb-1">Tidak Ada Kendaraan</p>
-                                    <p class="text-sm text-gray-500">Belum ada kendaraan yang terdaftar di sistem</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
-            </table>
-        </div>
+        </table>
 
-        <!-- Pagination -->
-        @if($items->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                {{ $items->links() }}
-            </div>
+        <div class="px-6 py-4 border-t bg-gray-50">
+            {{ $items->links() }}
+        </div>
+        @else
+        <div class="px-6 py-8 text-center text-gray-500">
+            <p class="text-lg">Tidak ada kendaraan</p>
+        </div>
         @endif
     </div>
 </div>

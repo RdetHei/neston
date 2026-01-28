@@ -3,7 +3,7 @@
 @section('title','Area Parkir')
 
 @section('content')
-<div class="py-6 px-4 sm:px-6 lg:px-8">
+<div class="p-4 sm:p-6 lg:p-8">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
@@ -40,7 +40,7 @@
     @endif
 
     <!-- Card Container -->
-    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
         <!-- Card Header -->
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div class="flex items-center justify-between">
@@ -50,31 +50,31 @@
         </div>
 
         <!-- Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Area</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kapasitas</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Terisi</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @forelse($areas as $area)
+        @if($areas->count())
+        <table class="w-full table-auto divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Area</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kapasitas</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Terisi</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($areas as $area)
                         @php
                             $percentage = $area->kapasitas > 0 ? ($area->terisi / $area->kapasitas * 100) : 0;
                             $statusColor = $percentage >= 80 ? 'bg-red-500' : ($percentage >= 60 ? 'bg-yellow-500' : 'bg-green-500');
                             $statusText = $percentage >= 80 ? 'Penuh' : ($percentage >= 60 ? 'Hampir Penuh' : 'Tersedia');
                             $statusBadge = $percentage >= 80 ? 'bg-red-100 text-red-800' : ($percentage >= 60 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800');
                         @endphp
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm">
                                 <span class="text-sm font-semibold text-gray-900">#{{ $area->id_area }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-md">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 <div class="flex items-center gap-2">
                                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
@@ -97,14 +97,14 @@
                                     <span class="text-xs text-gray-500">slot</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 <div class="flex items-center gap-2">
                                     <div class="w-2 h-2 {{ $statusColor }} rounded-full"></div>
                                     <span class="text-sm font-semibold text-gray-900">{{ $area->terisi ?? 0 }}</span>
                                     <span class="text-xs text-gray-500">kendaraan</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 <div class="space-y-2">
                                     <div class="w-full bg-gray-200 rounded-full h-2">
                                         <div class="{{ $statusColor }} h-2 rounded-full transition-all" style="width: {{ $percentage }}%"></div>
@@ -117,7 +117,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm space-x-2">
                                 <div class="flex items-center gap-2">
                                     <!-- Edit Button -->
                                     <a href="{{ route('area-parkir.edit', $area) }}"
@@ -143,31 +143,17 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-12">
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <p class="text-gray-900 font-semibold mb-1">Tidak Ada Area Parkir</p>
-                                    <p class="text-sm text-gray-500">Belum ada area parkir yang terdaftar</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
-            </table>
-        </div>
+        </table>
 
-        <!-- Pagination -->
-        @if($areas->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                {{ $areas->links() }}
-            </div>
+        <div class="px-6 py-4 border-t bg-gray-50">
+            {{ $areas->links() }}
+        </div>
+        @else
+        <div class="px-6 py-8 text-center text-gray-500">
+            <p class="text-lg">Tidak ada area parkir</p>
+        </div>
         @endif
     </div>
 </div>

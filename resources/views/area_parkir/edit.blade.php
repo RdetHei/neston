@@ -3,13 +3,9 @@
 @section('title','Edit Area Parkir')
 
 @section('content')
-@extends('layouts.app')
-
-@section('title','Edit Area Parkir')
-
-@section('content')
-<div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
-    <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Edit Area Parkir</h2>
+<div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
+    <div class="max-w-2xl w-full mx-auto p-6 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Edit Area Parkir</h2>
 
     <form action="{{ route('area-parkir.update', $area) }}" method="POST" class="space-y-4">
         @csrf
@@ -40,5 +36,6 @@
             </button>
         </div>
     </form>
+    </div>
 </div>
 @endsection

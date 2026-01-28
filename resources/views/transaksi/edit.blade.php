@@ -3,13 +3,9 @@
 @section('title','Edit Transaksi')
 
 @section('content')
-@extends('layouts.app')
-
-@section('title','Edit Transaksi')
-
-@section('content')
-<div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
-    <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Edit Transaksi #{{ str_pad($item->id_parkir, 8, '0', STR_PAD_LEFT) }}</h2>
+<div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
+    <div class="max-w-2xl w-full mx-auto p-6 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Edit Transaksi #{{ str_pad($item->id_parkir, 8, '0', STR_PAD_LEFT) }}</h2>
 
     @if($errors->any())
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -138,6 +134,7 @@
             </button>
         </div>
     </form>
+    </div>
 </div>
 @endsection
 

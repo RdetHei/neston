@@ -1,4 +1,3 @@
-    <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
         <aside class="w-64 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 flex-shrink-0 hidden lg:flex flex-col relative z-50 shadow-sm">
             <div class="h-16 border-b border-gray-200 flex items-center px-6 bg-white">

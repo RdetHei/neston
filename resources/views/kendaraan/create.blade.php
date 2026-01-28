@@ -3,13 +3,9 @@
 @section('title','Create Kendaraan')
 
 @section('content')
-@extends('layouts.app')
-
-@section('title','Create Kendaraan')
-
-@section('content')
-<div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
-    <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Create Kendaraan</h2>
+<div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
+    <div class="max-w-2xl w-full mx-auto p-6 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Create Kendaraan</h2>
 
     <form action="{{ route('kendaraan.store') }}" method="POST" class="space-y-4">
         @csrf
@@ -70,7 +66,6 @@
             </button>
         </div>
     </form>
+    </div>
 </div>
-@endsection
-
 @endsection

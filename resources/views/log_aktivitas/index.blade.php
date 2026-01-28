@@ -3,7 +3,7 @@
 @section('title','Log Aktivitas')
 
 @section('content')
-<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+<div class="p-4 sm:p-6 lg:p-8">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
@@ -40,7 +40,7 @@
     @endif
 
     <!-- Card Container -->
-    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
         <!-- Card Header -->
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div class="flex items-center justify-between">
@@ -50,24 +50,24 @@
         </div>
 
         <!-- Table -->
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aktivitas</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Waktu</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @forelse($items as $item)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
+        @if($items->count())
+        <table class="w-full table-auto divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aktivitas</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($items as $item)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm">
                                 <span class="text-sm font-semibold text-gray-900">#{{ $item->id_log }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 <div class="flex items-center gap-2">
                                     <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                                         <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,10 +77,10 @@
                                     <span class="text-sm font-medium text-gray-900">{{ $item->user?->name ?? 'N/A' }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 text-sm">
                                 <span class="text-sm text-gray-900">{{ $item->aktivitas }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 @if($item->waktu_aktivitas)
                                     <div class="text-sm text-gray-900">{{ $item->waktu_aktivitas->format('d M Y') }}</div>
                                     <div class="text-xs text-gray-500">{{ $item->waktu_aktivitas->format('H:i') }}</div>
@@ -88,7 +88,7 @@
                                     <span class="text-sm text-gray-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm space-x-2">
                                 <div class="flex items-center gap-2">
                                     <!-- View Button -->
                                     <a href="{{ route('log-aktivitas.show', $item->id_log) }}"
@@ -124,30 +124,17 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12">
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                    </div>
-                                    <p class="text-gray-900 font-semibold mb-1">Tidak Ada Log Aktivitas</p>
-                                    <p class="text-sm text-gray-500">Belum ada aktivitas yang tercatat di sistem</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
-            </table>
-        </div>
+        </table>
 
-        <!-- Pagination -->
-        @if($items->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                {{ $items->links() }}
-            </div>
+        <div class="px-6 py-4 border-t bg-gray-50">
+            {{ $items->links() }}
+        </div>
+        @else
+        <div class="px-6 py-8 text-center text-gray-500">
+            <p class="text-lg">Tidak ada log aktivitas</p>
+        </div>
         @endif
     </div>
 </div>

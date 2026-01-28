@@ -3,7 +3,7 @@
 @section('title','Transaksi')
 
 @section('content')
-<div class="py-6 px-4 sm:px-6 lg:px-8">
+<div class="p-4 sm:p-6 lg:p-8">
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-3xl font-bold text-gray-800">Riwayat Transaksi Parkir</h2>
         <a href="{{ route('transaksi.create') }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
@@ -23,9 +23,9 @@
         </div>
     @endif
 
-    <div class="bg-white shadow rounded-lg overflow-hidden">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
         @if($transaksis->count())
-        <table class="min-w-full divide-y divide-gray-200">
+        <table class="w-full table-auto divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>

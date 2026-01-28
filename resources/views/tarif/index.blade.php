@@ -3,7 +3,7 @@
 @section('title','Tarif')
 
 @section('content')
-<div class="py-6 px-4 sm:px-6 lg:px-8">
+<div class="p-4 sm:p-6 lg:p-8">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
         <div>
@@ -40,7 +40,7 @@
     @endif
 
     <!-- Card Container -->
-    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
         <!-- Card Header -->
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div class="flex items-center justify-between">
@@ -50,23 +50,23 @@
         </div>
 
         <!-- Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis Kendaraan</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tarif Per Jam</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @forelse($items as $item)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
+        @if($items->count())
+        <table class="w-full table-auto divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis Kendaraan</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarif Per Jam</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($items as $item)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm">
                                 <span class="text-sm font-semibold text-gray-900">#{{ $item->id_tarif }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 <div class="flex items-center gap-3">
                                     @php
                                         $vehicleIcons = [
@@ -93,7 +93,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm">
                                 <div class="flex items-center gap-2">
                                     <div class="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg px-3 py-2">
                                         <p class="text-lg font-bold text-green-900">Rp {{ number_format($item->tarif_perjam, 0, ',', '.') }}</p>
@@ -101,7 +101,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 text-sm space-x-2">
                                 <div class="flex items-center gap-2">
                                     <!-- Edit Button -->
                                     <a href="{{ route('tarif.edit', $item) }}"
@@ -127,30 +127,17 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="px-6 py-12">
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <p class="text-gray-900 font-semibold mb-1">Tidak Ada Tarif</p>
-                                    <p class="text-sm text-gray-500">Belum ada tarif parkir yang ditentukan</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
-            </table>
-        </div>
+        </table>
 
-        <!-- Pagination -->
-        @if($items->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                {{ $items->links() }}
-            </div>
+        <div class="px-6 py-4 border-t bg-gray-50">
+            {{ $items->links() }}
+        </div>
+        @else
+        <div class="px-6 py-8 text-center text-gray-500">
+            <p class="text-lg">Tidak ada tarif parkir</p>
+        </div>
         @endif
     </div>
 </div>
