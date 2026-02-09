@@ -18,18 +18,34 @@ Route::get('/payment/{id_parkir}/confirm-qr/signed', [\App\Http\Controllers\Paym
     ->name('payment.confirm-qr.signed')
     ->middleware('signed');
 
+// Public thank-you page after customer pays via QR (no login required)
+Route::get('/payment/{id_parkir}/thank-you', [\App\Http\Controllers\PaymentController::class, 'thankYou'])
+    ->name('payment.thank-you');
+
+// Midtrans notification callback (public, rate-limited; verifikasi signature di controller)
+Route::post('/payment/midtrans/notification', [\App\Http\Controllers\PaymentController::class, 'midtransNotification'])
+    ->name('payment.midtrans.notification')
+    ->middleware('throttle:60,1');
+
 // Auth Routes
-Route::get('/register', [RegisterController::class, 'create'])->name('register.create');
-Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 Route::get('/login', [LoginController::class, 'create'])->name('login.create');
 Route::post('/login', [LoginController::class, 'store'])->name('login.store')->middleware('throttle:5,1');
+Route::get('/register', [RegisterController::class, 'create'])->name('register.create');
+Route::post('/register', [RegisterController::class, 'store'])->name('register.store')->middleware('throttle:5,1');
+// Lupa password: belum implement; redirect ke login dengan pesan
+Route::get('/forgot-password', function () {
+    return redirect()->route('login.create')->with('info', 'Lupa password? Hubungi administrator untuk reset password.');
+})->name('password.request');
 
 // Protected Routes - Require Authentication
 Route::middleware(['auth'])->group(function () {
-    // API for Parking Map (SVG 2D)
-    Route::get('/api/parking-slots', [\App\Http\Controllers\Api\ParkingMapController::class, 'index'])->name('api.parking-slots');
-    Route::post('/api/parking-slots/{area_id}/bookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'bookmark'])->name('api.parking-slots.bookmark');
-    Route::post('/api/parking-slots/{id_transaksi}/unbookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'unbookmark'])->name('api.parking-slots.unbookmark');
+    // API & halaman Peta Parkir: hanya admin dan petugas (sesuai kebutuhan operasional parkir)
+    Route::middleware(['role:admin,petugas'])->group(function () {
+        Route::get('/api/parking-slots', [\App\Http\Controllers\Api\ParkingMapController::class, 'index'])->name('api.parking-slots');
+        Route::post('/api/parking-slots/{area_id}/bookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'bookmark'])->name('api.parking-slots.bookmark');
+        Route::post('/api/parking-slots/{id_transaksi}/unbookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'unbookmark'])->name('api.parking-slots.unbookmark');
+        Route::get('/parking-map', [\App\Http\Controllers\Api\ParkingMapController::class, 'showMap'])->name('parking.map.index');
+    });
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -45,9 +61,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/user/dashboard', function () {
         return view('user.dashboard');
     })->name('user.dashboard');
-
-    // Peta Parkir (semua role yang login)
-    Route::get('/parking-map', [\App\Http\Controllers\Api\ParkingMapController::class, 'showMap'])->name('parking.map.index');
 
     // ========== ADMIN ONLY (sesuai Tabel Fitur SPK) ==========
     // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, Akses Log Aktifitas, Cetak struk parkir
@@ -96,6 +109,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/payment/{id_parkir}/qr', [\App\Http\Controllers\PaymentController::class, 'qr_scan'])->name('payment.qr-scan');
         Route::post('/payment/{id_parkir}/confirm-qr', [\App\Http\Controllers\PaymentController::class, 'confirm_qr'])->name('payment.confirm-qr');
         Route::get('/payment/{id_parkir}/success', [\App\Http\Controllers\PaymentController::class, 'success'])->name('payment.success');
+        Route::get('/payment/{id_parkir}/midtrans', [\App\Http\Controllers\PaymentController::class, 'midtransPay'])->name('payment.midtrans');
+        Route::post('/payment/{id_parkir}/midtrans/token', [\App\Http\Controllers\PaymentController::class, 'midtransSnapToken'])->name('payment.midtrans.token');
         Route::get('/payment-history', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payment.index');
     });
 

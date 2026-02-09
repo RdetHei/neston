@@ -195,11 +195,25 @@ class PaymentController extends Controller
                 ]);
             });
 
-            return redirect()->route('payment.success', $id_parkir)->with('success', 'Pembayaran berhasil diproses');
+            // Redirect ke halaman thank-you publik (customer biasanya tidak login)
+            return redirect()->route('payment.thank-you', $id_parkir)->with('success', 'Pembayaran berhasil diproses');
         } catch (\Exception $e) {
             Log::error('confirm_qr_signed gagal', ['id_parkir' => $id_parkir, 'error' => $e->getMessage()]);
             return redirect()->route('payment.create', $id_parkir)->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Halaman terima kasih publik setelah pembayaran via QR (tanpa login).
+     */
+    public function thankYou($id_parkir)
+    {
+        $transaksi = Transaksi::with(['kendaraan', 'tarif'])
+            ->where('id_parkir', $id_parkir)
+            ->where('status_pembayaran', 'berhasil')
+            ->firstOrFail();
+
+        return view('payment.thank-you', compact('transaksi'));
     }
 
     /**
@@ -253,5 +267,154 @@ class PaymentController extends Controller
             ->paginate(15);
 
         return view('payment.index', compact('pembayarans'));
+    }
+
+    /**
+     * Halaman pembayaran Midtrans (Snap).
+     */
+    public function midtransPay($id_parkir)
+    {
+        $transaksi = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
+            ->findOrFail($id_parkir);
+
+        if ($transaksi->status_pembayaran === 'berhasil') {
+            return redirect()->route('payment.create', $id_parkir)->with('error', 'Transaksi ini sudah dibayar');
+        }
+        if ($transaksi->status !== 'keluar' || is_null($transaksi->biaya_total)) {
+            return redirect()->route('payment.create', $id_parkir)->with('error', 'Transaksi tidak valid untuk pembayaran.');
+        }
+
+        $clientKey = config('services.midtrans.client_key');
+        $isProduction = config('services.midtrans.is_production');
+        return view('payment.midtrans-pay', compact('transaksi', 'clientKey', 'isProduction'));
+    }
+
+    /**
+     * API: dapatkan Snap token untuk transaksi (dipanggil dari halaman Midtrans Pay).
+     */
+    public function midtransSnapToken(Request $request, $id_parkir)
+    {
+        $transaksi = Transaksi::with(['kendaraan', 'tarif'])->findOrFail($id_parkir);
+
+        if ($transaksi->status_pembayaran === 'berhasil') {
+            return response()->json(['error' => 'Transaksi sudah dibayar'], 400);
+        }
+        if ($transaksi->status !== 'keluar' || is_null($transaksi->biaya_total)) {
+            return response()->json(['error' => 'Transaksi tidak valid'], 400);
+        }
+
+        $serverKey = config('services.midtrans.server_key');
+        $isProduction = config('services.midtrans.is_production');
+
+        if (empty($serverKey)) {
+            Log::error('Midtrans server key tidak di-set');
+            return response()->json(['error' => 'Konfigurasi pembayaran belum tersedia'], 500);
+        }
+
+        try {
+            \Midtrans\Config::$serverKey = $serverKey;
+            \Midtrans\Config::$isProduction = $isProduction;
+            \Midtrans\Config::$isSanitized = true;
+            \Midtrans\Config::$is3ds = true;
+
+            $order_id = 'PARKIR-' . $id_parkir . '-' . time();
+            $gross_amount = (int) round((float) $transaksi->biaya_total);
+
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $order_id,
+                    'gross_amount' => $gross_amount,
+                ],
+                'item_details' => [
+                    [
+                        'id' => (string) $id_parkir,
+                        'price' => $gross_amount,
+                        'quantity' => 1,
+                        'name' => 'Parkir - ' . ($transaksi->kendaraan->plat_nomor ?? 'Kendaraan'),
+                        'category' => 'Parkir',
+                    ],
+                ],
+                'customer_details' => [
+                    'first_name' => $transaksi->kendaraan->pemilik ?? $transaksi->kendaraan->plat_nomor ?? 'Customer',
+                    'email' => $transaksi->user?->email ?? 'customer@parked.local',
+                ],
+            ];
+
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+            return response()->json([
+                'snap_token' => $snapToken,
+                'order_id' => $order_id,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Midtrans getSnapToken error', ['id_parkir' => $id_parkir, 'message' => $e->getMessage()]);
+            return response()->json(['error' => 'Gagal membuat sesi pembayaran: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Callback notifikasi Midtrans (idempotent).
+     * order_id format: PARKIR-{id_parkir}-{timestamp}
+     */
+    public function midtransNotification(Request $request)
+    {
+        $payload = $request->all();
+        Log::info('Midtrans notification', ['order_id' => $payload['order_id'] ?? null, 'transaction_status' => $payload['transaction_status'] ?? null]);
+
+        $order_id = $payload['order_id'] ?? null;
+        $transaction_status = $payload['transaction_status'] ?? null;
+        $transaction_id = $payload['transaction_id'] ?? null;
+        $payment_type = $payload['payment_type'] ?? null;
+        $gross_amount = (float) ($payload['gross_amount'] ?? 0);
+
+        if (!$order_id || !preg_match('/^PARKIR-(\d+)-/', $order_id, $m)) {
+            return response()->json(['message' => 'Invalid order_id'], 400);
+        }
+
+        $id_parkir = (int) $m[1];
+
+        // Hanya proses settlement atau capture sebagai pembayaran berhasil
+        $successStatuses = ['capture', 'settlement'];
+        if (!in_array($transaction_status, $successStatuses)) {
+            return response()->json(['received' => true]);
+        }
+
+        try {
+            DB::transaction(function () use ($id_parkir, $order_id, $transaction_id, $payment_type, $gross_amount) {
+                $transaksi = Transaksi::lockForUpdate()->find($id_parkir);
+                if (!$transaksi) {
+                    return;
+                }
+                if ($transaksi->status_pembayaran === 'berhasil') {
+                    return;
+                }
+                if ($transaksi->status !== 'keluar' || is_null($transaksi->biaya_total)) {
+                    return;
+                }
+
+                $pembayaran = Pembayaran::create([
+                    'id_parkir' => $id_parkir,
+                    'order_id' => $order_id,
+                    'transaction_id' => $transaction_id,
+                    'payment_type' => $payment_type,
+                    'nominal' => $gross_amount,
+                    'metode' => 'midtrans',
+                    'status' => 'berhasil',
+                    'keterangan' => 'Pembayaran Midtrans (' . ($payment_type ?? 'online') . ')',
+                    'id_user' => null,
+                    'waktu_pembayaran' => Carbon::now(),
+                ]);
+
+                $transaksi->update([
+                    'status_pembayaran' => 'berhasil',
+                    'id_pembayaran' => $pembayaran->id_pembayaran,
+                ]);
+            });
+        } catch (\Exception $e) {
+            Log::error('Midtrans notification handler error', ['order_id' => $order_id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Processing error'], 500);
+        }
+
+        return response()->json(['received' => true]);
     }
 }

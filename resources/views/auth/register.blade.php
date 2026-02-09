@@ -1,64 +1,258 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
-    <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; }
-        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        h2 { text-align: center; margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; }
-        .form-group input { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .form-group .error { color: red; font-size: 0.875em; margin-top: 0.25rem; }
-        button { width: 100%; padding: 0.75rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
-        button:hover { background-color: #0056b3; }
-    </style>
+    <title>Register - PARKED</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#e8f5e9',
+                            100: '#c8e6c9',
+                            200: '#a5d6a7',
+                            300: '#81c784',
+                            400: '#66bb6a',
+                            500: '#00aa13',
+                            600: '#009611',
+                            700: '#00820f',
+                            800: '#006e0d',
+                            900: '#004d09',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-    <div class="container">
-        <h2>Register</h2>
-        <form method="POST" action="{{ route('register.store') }}">
-            @csrf
-
-            <!-- Name -->
-            <div class="form-group">
-                <label for="name">Name</label>
-                <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus>
-                @error('name')
-                    <div class="error">{{ $message }}</div>
-                @enderror
+<body class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-primary-500 text-white mb-4 shadow-sm">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-1">Buat Akun</h2>
+                <p class="text-gray-500 text-sm">Daftar untuk memulai dengan PARKED</p>
             </div>
 
-            <!-- Email Address -->
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input id="email" type="email" name="email" value="{{ old('email') }}" required>
-                @error('email')
-                    <div class="error">{{ $message }}</div>
-                @enderror
-            </div>
+            <!-- Alerts -->
+            @if(session('success'))
+                <div class="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if(session('info'))
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-sm">
+                    {{ session('info') }}
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+                    {{ session('error') }}
+                </div>
+            @endif
 
-            <!-- Password -->
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input id="password" type="password" name="password" required>
-                @error('password')
-                    <div class="error">{{ $message }}</div>
-                @enderror
-            </div>
+            <!-- Register Form -->
+            <form method="POST" action="{{ route('register.store') }}" id="registerForm">
+                @csrf
 
-            <!-- Confirm Password -->
-            <div class="form-group">
-                <label for="password_confirmation">Confirm Password</label>
-                <input id="password_confirmation" type="password" name="password_confirmation" required>
-            </div>
+                <!-- Name -->
+                <div class="mb-5">
+                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Full Name
+                    </label>
+                    <input
+                        id="name"
+                        type="text"
+                        name="name"
+                        value="{{ old('name') }}"
+                        required
+                        autofocus
+                        autocomplete="name"
+                        placeholder="John Doe"
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all duration-200 @error('name') border-red-500 @enderror"
+                    >
+                    @error('name')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <button type="submit">
-                Register
-            </button>
-        </form>
+                <!-- Email -->
+                <div class="mb-5">
+                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Email
+                    </label>
+                    <input
+                        id="email"
+                        type="email"
+                        name="email"
+                        value="{{ old('email') }}"
+                        required
+                        autocomplete="email"
+                        placeholder="nama@email.com"
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all duration-200 @error('email') border-red-500 @enderror"
+                    >
+                    @error('email')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Password -->
+                <div class="mb-5">
+                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Kata Sandi
+                    </label>
+                    <div class="relative">
+                        <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            required
+                            autocomplete="new-password"
+                            placeholder="Min. 8 characters"
+                            class="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all duration-200 @error('password') border-red-500 @enderror"
+                        >
+                        <button
+                            type="button"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
+                            id="togglePassword"
+                            aria-label="Toggle password visibility"
+                        >
+                            <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            <svg id="eyeSlashIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @error('password')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-6">
+                    <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Konfirmasi Kata Sandi
+                    </label>
+                    <div class="relative">
+                        <input
+                            id="password_confirmation"
+                            type="password"
+                            name="password_confirmation"
+                            required
+                            autocomplete="new-password"
+                            placeholder="Ulangi kata sandi"
+                            class="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all duration-200"
+                        >
+                        <button
+                            type="button"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
+                            id="togglePasswordConfirm"
+                            aria-label="Toggle password visibility"
+                        >
+                            <svg id="eyeIconConfirm" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            <svg id="eyeSlashIconConfirm" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button
+                    type="submit"
+                    id="submitBtn"
+                    class="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-4 rounded-xl shadow-sm hover:shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed relative"
+                >
+                    <span id="spinner" class="hidden absolute left-4 top-1/2 -translate-y-1/2">
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
+                    <span id="buttonText">Daftar</span>
+                </button>
+            </form>
+
+            <!-- Login Link -->
+            <div class="text-center pt-6 mt-6 border-t border-gray-100">
+                <p class="text-sm text-gray-600">
+                    Sudah punya akun?
+                    <a href="{{ route('login.create') }}" class="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
+                        Masuk
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-gray-500 text-sm">
+            <p>© {{ date('Y') }} PARKED</p>
+        </div>
     </div>
+
+    <script>
+        // Password visibility toggle (password)
+        var togglePassword = document.getElementById('togglePassword');
+        var passwordInput = document.getElementById('password');
+        var eyeIcon = document.getElementById('eyeIcon');
+        var eyeSlashIcon = document.getElementById('eyeSlashIcon');
+        if (togglePassword) {
+            togglePassword.addEventListener('click', function() {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    eyeIcon.classList.add('hidden');
+                    eyeSlashIcon.classList.remove('hidden');
+                } else {
+                    passwordInput.type = 'password';
+                    eyeIcon.classList.remove('hidden');
+                    eyeSlashIcon.classList.add('hidden');
+                }
+            });
+        }
+
+        // Password visibility toggle (confirm)
+        var togglePasswordConfirm = document.getElementById('togglePasswordConfirm');
+        var passwordConfirmInput = document.getElementById('password_confirmation');
+        var eyeIconConfirm = document.getElementById('eyeIconConfirm');
+        var eyeSlashIconConfirm = document.getElementById('eyeSlashIconConfirm');
+        if (togglePasswordConfirm) {
+            togglePasswordConfirm.addEventListener('click', function() {
+                if (passwordConfirmInput.type === 'password') {
+                    passwordConfirmInput.type = 'text';
+                    eyeIconConfirm.classList.add('hidden');
+                    eyeSlashIconConfirm.classList.remove('hidden');
+                } else {
+                    passwordConfirmInput.type = 'password';
+                    eyeIconConfirm.classList.remove('hidden');
+                    eyeSlashIconConfirm.classList.add('hidden');
+                }
+            });
+        }
+
+        // Form submission loading state
+        var registerForm = document.getElementById('registerForm');
+        var submitBtn = document.getElementById('submitBtn');
+        var spinner = document.getElementById('spinner');
+        var buttonText = document.getElementById('buttonText');
+        if (registerForm) {
+            registerForm.addEventListener('submit', function() {
+                submitBtn.disabled = true;
+                if (spinner) spinner.classList.remove('hidden');
+                if (buttonText) buttonText.textContent = 'Memproses...';
+            });
+        }
+    </script>
 </body>
 </html>

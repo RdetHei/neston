@@ -13,6 +13,9 @@ class Pembayaran extends Model
     protected $primaryKey = 'id_pembayaran';
     protected $fillable = [
         'id_parkir',
+        'order_id',
+        'transaction_id',
+        'payment_type',
         'nominal',
         'metode',
         'status',

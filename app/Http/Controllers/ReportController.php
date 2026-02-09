@@ -35,12 +35,12 @@ class ReportController extends Controller
             $query->where('metode', $request->metode);
         }
 
-        $pembayarans = $query->orderBy('created_at', 'desc')->paginate(15);
-
-        // Summary statistics
+        // Summary pakai filter yang sama (clone sebelum paginate)
         $total_nominal = (clone $query)->sum('nominal');
         $count_pembayaran = (clone $query)->count();
         $avg_nominal = $count_pembayaran > 0 ? $total_nominal / $count_pembayaran : 0;
+
+        $pembayarans = $query->orderBy('created_at', 'desc')->paginate(15);
         $title = 'Laporan Pembayaran';
         return view('report.pembayaran', compact('pembayarans', 'total_nominal', 'count_pembayaran', 'avg_nominal', 'title'));
     }
@@ -71,12 +71,12 @@ class ReportController extends Controller
             $query->where('id_area', $request->id_area);
         }
 
-        $transaksis = $query->orderBy('waktu_masuk', 'desc')->paginate(15);
-
-        // Summary statistics
+        // Summary pakai filter yang sama (clone sebelum paginate)
         $total_transaksi = (clone $query)->count();
         $total_biaya = (clone $query)->sum('biaya_total');
         $durasi_rata = (clone $query)->avg('durasi_jam');
+
+        $transaksis = $query->orderBy('waktu_masuk', 'desc')->paginate(15);
         $title = 'Laporan Transaksi';
         return view('report.transaksi', compact('transaksis', 'total_transaksi', 'total_biaya', 'durasi_rata', 'title'));
     }
@@ -104,13 +104,14 @@ class ReportController extends Controller
 
         $filename = 'pembayaran_' . date('Y-m-d_H-i-s') . '.csv';
 
-        $headers = array(
-            'Content-Type' => 'text/csv; charset=utf-8',
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
-        );
+        ];
 
         $callback = function() use ($pembayarans) {
             $file = fopen('php://output', 'w');
+            fprintf($file, "\xEF\xBB\xBF"); // UTF-8 BOM untuk Excel
             fputcsv($file, array('ID', 'Transaksi', 'Nominal', 'Metode', 'Status', 'Petugas', 'Waktu Pembayaran', 'Dibuat'));
 
             foreach ($pembayarans as $row) {
@@ -153,14 +154,16 @@ class ReportController extends Controller
 
         $transaksis = $query->orderBy('waktu_masuk', 'desc')->get();
 
-        $headers = array(
-            'Content-Type' => 'text/csv; charset=utf-8',
+        $filename = 'transaksi_' . date('Y-m-d_H-i-s') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
-            'Accept-Language' => "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-        );
+        ];
 
         $callback = function() use ($transaksis) {
             $file = fopen('php://output', 'w');
+            fprintf($file, "\xEF\xBB\xBF"); // UTF-8 BOM untuk Excel
             fputcsv($file, array('ID', 'Plat Nomor', 'Area', 'Waktu Masuk', 'Waktu Keluar', 'Durasi (jam)', 'Biaya', 'Status', 'Pembayaran'));
 
             foreach ($transaksis as $row) {

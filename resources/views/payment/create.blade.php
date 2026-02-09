@@ -100,6 +100,35 @@
                     Lanjut ke QR Scan
                 </div>
             </div>
+
+            <!-- Bayar dengan Midtrans (GoPay, VA, dll) -->
+            <div class="bg-white border-2 border-gray-300 rounded-lg p-8 hover:border-green-500 hover:shadow-lg transition cursor-pointer"
+                 onclick="document.location.href='{{ route('payment.midtrans', $transaksi->id_parkir) }}'">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xs font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full">ONLINE</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Bayar dengan Midtrans</h3>
+                <p class="text-gray-600 mb-4">GoPay, transfer bank, kartu kredit, dan metode online lainnya</p>
+                <ul class="space-y-2 text-sm text-gray-700 mb-6">
+                    <li class="flex items-center gap-2">
+                        <span class="text-green-600">•</span> GoPay, OVO, DANA, LinkAja
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="text-green-600">•</span> Transfer bank (BCA, BNI, BRI, dll)
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="text-green-600">•</span> Kartu kredit/debit
+                    </li>
+                </ul>
+                <div class="bg-green-50 p-3 rounded text-green-800 font-semibold text-center">
+                    Bayar Online dengan Midtrans
+                </div>
+            </div>
         </div>
     @endcomponent
 @endsection
