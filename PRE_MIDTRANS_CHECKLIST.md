@@ -88,3 +88,10 @@ Dokumen ini merangkum hal yang sudah dicek, yang sudah diperbaiki, dan yang bisa
 - **Opsional:** Lock/disable register, standarkan tema halaman manual confirm, validasi nominal, review akses parking-map.
 
 Setelah checklist ini dijalankan (terutama konfigurasi dan desain status pembayaran), integrasi Midtrans bisa dimulai (snap/redirect, callback, update status).
+
+---
+
+## Sudah dilakukan (integrasi Midtrans)
+
+- **Verifikasi notifikasi:** Handler callback tidak hanya memercayai body POST. Aplikasi memanggil `Transaction::status(order_id)` ke API Midtrans dan memakai data dari API untuk update database, sehingga notifikasi palsu tidak bisa mengubah status.
+- **Dokumentasi:** Lihat `MIDTRANS_SETUP.md` untuk langkah setup, Notification URL, format kunci, dan langkah uji coba.

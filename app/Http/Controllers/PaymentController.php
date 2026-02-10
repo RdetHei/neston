@@ -347,31 +347,53 @@ class PaymentController extends Controller
                 'order_id' => $order_id,
             ]);
         } catch (\Exception $e) {
-            Log::error('Midtrans getSnapToken error', ['id_parkir' => $id_parkir, 'message' => $e->getMessage()]);
-            return response()->json(['error' => 'Gagal membuat sesi pembayaran: ' . $e->getMessage()], 500);
+            $msg = $e->getMessage();
+            Log::error('Midtrans getSnapToken error', ['id_parkir' => $id_parkir, 'message' => $msg]);
+            if (str_contains($msg, '401') || str_contains(strtolower($msg), 'unauthorized') || str_contains($msg, 'Access denied')) {
+                return response()->json(['error' => 'Konfigurasi Midtrans tidak valid (401). Periksa MIDTRANS_SERVER_KEY/MIDTRANS_CLIENT_KEY dan sesuaikan MIDTRANS_IS_PRODUCTION (sandbox/production). Lalu jalankan: php artisan config:clear dan php artisan midtrans:check'], 500);
+            }
+            return response()->json(['error' => 'Gagal membuat sesi pembayaran: ' . $msg], 500);
         }
     }
 
     /**
      * Callback notifikasi Midtrans (idempotent).
      * order_id format: PARKIR-{id_parkir}-{timestamp}
+     * Data divalidasi dengan mengambil status transaksi dari API Midtrans (bukan hanya dari body POST).
      */
     public function midtransNotification(Request $request)
     {
         $payload = $request->all();
-        Log::info('Midtrans notification', ['order_id' => $payload['order_id'] ?? null, 'transaction_status' => $payload['transaction_status'] ?? null]);
-
         $order_id = $payload['order_id'] ?? null;
-        $transaction_status = $payload['transaction_status'] ?? null;
-        $transaction_id = $payload['transaction_id'] ?? null;
-        $payment_type = $payload['payment_type'] ?? null;
-        $gross_amount = (float) ($payload['gross_amount'] ?? 0);
+        Log::info('Midtrans notification', ['order_id' => $order_id, 'transaction_status' => $payload['transaction_status'] ?? null]);
 
         if (!$order_id || !preg_match('/^PARKIR-(\d+)-/', $order_id, $m)) {
             return response()->json(['message' => 'Invalid order_id'], 400);
         }
 
         $id_parkir = (int) $m[1];
+
+        // Verifikasi dengan mengambil status resmi dari API Midtrans (agar notifikasi benar-benar dari Midtrans)
+        $serverKey = config('services.midtrans.server_key');
+        $isProduction = config('services.midtrans.is_production');
+        if (empty($serverKey)) {
+            Log::error('Midtrans notification: server key tidak di-set');
+            return response()->json(['message' => 'Server error'], 500);
+        }
+
+        try {
+            \Midtrans\Config::$serverKey = $serverKey;
+            \Midtrans\Config::$isProduction = $isProduction;
+            $statusResponse = \Midtrans\Transaction::status($order_id);
+        } catch (\Exception $e) {
+            Log::warning('Midtrans notification: gagal fetch status', ['order_id' => $order_id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Invalid or unreachable transaction'], 400);
+        }
+
+        $transaction_status = $statusResponse->transaction_status ?? null;
+        $transaction_id = $statusResponse->transaction_id ?? $payload['transaction_id'] ?? null;
+        $payment_type = $statusResponse->payment_type ?? $payload['payment_type'] ?? null;
+        $gross_amount = (float) ($statusResponse->gross_amount ?? $payload['gross_amount'] ?? 0);
 
         // Hanya proses settlement atau capture sebagai pembayaran berhasil
         $successStatuses = ['capture', 'settlement'];

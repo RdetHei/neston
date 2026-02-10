@@ -31,7 +31,16 @@
 @php
     $snapJs = $isProduction ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js';
 @endphp
+@if(!empty($clientKey))
 <script type="text/javascript" src="{{ $snapJs }}" data-client-key="{{ $clientKey }}"></script>
+@else
+<div class="max-w-2xl mx-auto mt-4">
+    <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
+        <p class="font-semibold mb-1">Konfigurasi Midtrans belum lengkap</p>
+        <p>Isi MIDTRANS_CLIENT_KEY di file .env dan pastikan sesuai lingkungan (Sandbox/Production). Setelah itu jalankan: <span class="font-mono">php artisan config:clear</span> dan uji dengan <span class="font-mono">php artisan midtrans:check</span>.</p>
+    </div>
+</div>
+@endif
 <script>
 (function() {
     var idParkir = {{ $transaksi->id_parkir }};

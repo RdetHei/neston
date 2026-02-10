@@ -57,7 +57,7 @@ class TransaksiController extends Controller
                 return $transaksi;
             });
 
-            return redirect()->route('transaksi.index')
+            return redirect()->route('transaksi.parkir.index')
                 ->with('success', 'Kendaraan berhasil dicatat masuk parkir. ID Transaksi: ' . $transaksi->id_parkir);
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Gagal mencatat transaksi: ' . $e->getMessage());
@@ -115,8 +115,11 @@ class TransaksiController extends Controller
 
     public function index()
     {
-        // Filter untuk menampilkan view yang berbeda (opsional)
-        if (request()->has('status') && request('status') == 'masuk') {
+        if (
+            request()->routeIs('transaksi.parkir.index') ||
+            (request()->route('status') === 'masuk') ||
+            (request()->query('status') === 'masuk')
+        ) {
             $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
                 ->where('status', 'masuk')
                 ->whereNull('waktu_keluar')

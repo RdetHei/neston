@@ -2,7 +2,7 @@
         <aside id="app-sidebar" class="sidebar-animate w-64 h-screen sticky top-0 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 flex-shrink-0 hidden lg:flex flex-col z-50 shadow-sm">
             <div class="sidebar-header h-16 border-b border-gray-200 flex items-center justify-between px-3 lg:px-4 bg-white">
                 <div class="flex items-center gap-2 min-w-0 sidebar-header-brand">
-                    <img src="{{ asset('images/parked-logo.png') }}" alt="Parked" class="h-8 w-auto object-contain">
+                    <img src="{{ asset('images/neston.png') }}" alt="Parked" class="h-8 w-auto object-contain">
                 </div>
                 <button id="sidebar-toggle" type="button"
                         class="sidebar-toggle-btn hidden lg:inline-flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 text-gray-600 shrink-0"
