@@ -31,6 +31,20 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('12345678'),
         ]);
 
+        User::factory()->create([
+            'name' => 'Petugas',
+            'email' => 'petugas@gmail.com',
+            'role' => 'petugas123',
+            'password' => bcrypt('12345678'),
+        ]);
+
+        User::factory()->create([
+            'name' => 'Owner',
+            'email' => 'owner@gmail.com',
+            'role' => 'owner',
+            'password' => bcrypt('12345678'),
+        ]);
+
         // Call app-specific seeders
         $this->call([
             AreaParkirSeeder::class,

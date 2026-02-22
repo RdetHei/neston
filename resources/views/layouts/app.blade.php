@@ -7,8 +7,10 @@
     <title>NESTON</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
     <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
     <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-100" data-sidebar="expanded">
         {{-- Layout wrapper: sidebar + main content --}}

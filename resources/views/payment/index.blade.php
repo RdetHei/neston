@@ -39,10 +39,10 @@
                         Rp {{ number_format($pembayaran->nominal, 0, ',', '.') }}
                     </td>
                     <td class="px-6 py-4 text-sm">
-                        @if($pembayaran->metode === 'manual')
-                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold">Manual</span>
+                        @if($pembayaran->metode === 'midtrans')
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">Midtrans</span>
                         @else
-                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">QR Scan</span>
+                            <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold">{{ ucfirst($pembayaran->metode ?? 'Unknown') }}</span>
                         @endif
                     </td>
                     <td class="px-6 py-4 text-sm">

@@ -41,68 +41,10 @@
             </div>
         </div>
 
-        <!-- Pilihan Metode -->
+        <!-- Pilihan Metode Pembayaran -->
         <div class="grid grid-cols-1 gap-6">
-            <!-- Pembayaran Manual -->
-            <div class="bg-white border-2 border-gray-300 rounded-lg p-8 hover:border-indigo-500 hover:shadow-lg transition cursor-pointer"
-                 onclick="document.location.href='{{ route('payment.manual-confirm', $transaksi->id_parkir) }}'">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-                        </svg>
-                    </div>
-                    <span class="text-xs font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">PETUGAS</span>
-                </div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Pembayaran Manual</h3>
-                <p class="text-gray-600 mb-4">Petugas parkir akan memproses pembayaran secara manual</p>
-                <ul class="space-y-2 text-sm text-gray-700 mb-6">
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">•</span> Petugas input nominal pembayaran
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">•</span> Fleksibel dengan berbagai metode
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">•</span> Dapat diskon atau promosi
-                    </li>
-                </ul>
-                <div class="bg-indigo-50 p-3 rounded text-indigo-900 font-semibold text-center">
-                    Lanjut ke Pembayaran Manual
-                </div>
-            </div>
-
-            <!-- Pembayaran QR Scan -->
-            <div class="bg-white border-2 border-gray-300 rounded-lg p-8 hover:border-indigo-500 hover:shadow-lg transition cursor-pointer"
-                 onclick="document.location.href='{{ route('payment.qr-scan', $transaksi->id_parkir) }}'">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                    </div>
-                    <span class="text-xs font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">OTOMATIS</span>
-                </div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Pembayaran QR Scan</h3>
-                <p class="text-gray-600 mb-4">Pengendara langsung scan QR untuk membayar otomatis</p>
-                <ul class="space-y-2 text-sm text-gray-700 mb-6">
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">•</span> Cepat & otomatis
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">•</span> Tidak perlu antri
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">•</span> Riwayat digital otomatis
-                    </li>
-                </ul>
-                <div class="bg-indigo-50 p-3 rounded text-indigo-900 font-semibold text-center">
-                    Lanjut ke QR Scan
-                </div>
-            </div>
-
             <!-- Bayar dengan Midtrans (GoPay, VA, dll) -->
-            <div class="bg-white border-2 border-gray-300 rounded-lg p-8 hover:border-green-500 hover:shadow-lg transition cursor-pointer"
+            <div class="bg-white border-2 border-green-500 rounded-lg p-8 hover:border-green-600 hover:shadow-lg transition cursor-pointer"
                  onclick="document.location.href='{{ route('payment.midtrans', $transaksi->id_parkir) }}'">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">

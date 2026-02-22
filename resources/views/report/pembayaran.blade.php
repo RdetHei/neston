@@ -56,8 +56,7 @@
                     <select name="metode" id="metode"
                             class="block w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
                         <option value="">-- Semua --</option>
-                        <option value="manual" {{ request('metode') === 'manual' ? 'selected' : '' }}>Manual</option>
-                        <option value="qr_scan" {{ request('metode') === 'qr_scan' ? 'selected' : '' }}>QR Scan</option>
+                        <option value="midtrans" {{ request('metode') === 'midtrans' ? 'selected' : '' }}>Midtrans</option>
                     </select>
                 </div>
             </div>
@@ -157,9 +156,9 @@
                                 <span class="text-sm font-bold text-green-600">Rp {{ number_format($item->nominal, 0, ',', '.') }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($item->metode === 'manual')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        Manual
+                                @if($item->metode === 'midtrans')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Midtrans
                                     </span>
                                 @else
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">

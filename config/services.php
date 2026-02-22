@@ -41,4 +41,8 @@ return [
         'is_production' => filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN),
     ],
 
+    'plate_recognizer' => [
+        'key' => env('PLATE_RECOGNIZER_KEY', ''),
+    ],
+
 ];

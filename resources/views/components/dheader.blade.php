@@ -43,7 +43,7 @@
         $headerTitle = 'Tambah Log Aktivitas';
     } elseif (request()->routeIs('payment.select-transaction')) {
         $headerTitle = 'Proses Pembayaran';
-    } elseif (request()->routeIs('payment.create') || request()->routeIs('payment.manual-confirm') || request()->routeIs('payment.qr-scan')) {
+    } elseif (request()->routeIs('payment.create')) {
         $headerTitle = 'Pembayaran';
     } elseif (request()->routeIs('payment.success')) {
         $headerTitle = 'Pembayaran Berhasil';

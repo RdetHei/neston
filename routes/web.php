@@ -13,14 +13,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Public signed QR confirmation (no auth required, but requires valid signature)
-Route::get('/payment/{id_parkir}/confirm-qr/signed', [\App\Http\Controllers\PaymentController::class, 'confirm_qr_signed'])
-    ->name('payment.confirm-qr.signed')
-    ->middleware('signed');
-
-// Public thank-you page after customer pays via QR (no login required)
-Route::get('/payment/{id_parkir}/thank-you', [\App\Http\Controllers\PaymentController::class, 'thankYou'])
-    ->name('payment.thank-you');
 
 // Midtrans notification callbacks (public, rate-limited; verifikasi signature di controller)
 Route::post('/payment/midtrans/notification', [\App\Http\Controllers\PaymentController::class, 'midtransNotification'])
@@ -63,6 +55,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/api/parking-slots/{area_id}/bookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'bookmark'])->name('api.parking-slots.bookmark');
         Route::post('/api/parking-slots/{id_transaksi}/unbookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'unbookmark'])->name('api.parking-slots.unbookmark');
         Route::get('/parking-map', [\App\Http\Controllers\Api\ParkingMapController::class, 'showMap'])->name('parking.map.index');
+        
+        // Plate Recognizer API
+        Route::post('/scan-plate', [\App\Http\Controllers\Api\PlateRecognizerController::class, 'scanPlate'])->name('api.scan-plate');
+        
+        // Kendaraan search (autocomplete)
+        Route::get('/api/kendaraan/search', [\App\Http\Controllers\Api\KendaraanSearchController::class, 'search'])->name('api.kendaraan.search');
+        Route::get('/api/kendaraan/check-plat', [\App\Http\Controllers\Api\KendaraanSearchController::class, 'checkPlat'])->name('api.kendaraan.check-plat');
     });
 
     // Dashboard
@@ -122,10 +121,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/transaksi/{id}/check-out', [\App\Http\Controllers\TransaksiController::class, 'checkOut'])->name('transaksi.checkOut');
         Route::get('/payment/select-transaction', [\App\Http\Controllers\PaymentController::class, 'selectTransaction'])->name('payment.select-transaction');
         Route::get('/payment/{id_parkir}', [\App\Http\Controllers\PaymentController::class, 'create'])->name('payment.create');
-        Route::get('/payment/{id_parkir}/manual', [\App\Http\Controllers\PaymentController::class, 'manual_confirm'])->name('payment.manual-confirm');
-        Route::post('/payment/{id_parkir}/manual', [\App\Http\Controllers\PaymentController::class, 'manual_process'])->name('payment.manual-process');
-        Route::get('/payment/{id_parkir}/qr', [\App\Http\Controllers\PaymentController::class, 'qr_scan'])->name('payment.qr-scan');
-        Route::post('/payment/{id_parkir}/confirm-qr', [\App\Http\Controllers\PaymentController::class, 'confirm_qr'])->name('payment.confirm-qr');
         Route::get('/payment/{id_parkir}/success', [\App\Http\Controllers\PaymentController::class, 'success'])->name('payment.success');
         Route::get('/payment/{id_parkir}/midtrans', [\App\Http\Controllers\PaymentController::class, 'midtransPay'])->name('payment.midtrans');
         Route::post('/payment/{id_parkir}/midtrans/token', [\App\Http\Controllers\PaymentController::class, 'midtransSnapToken'])->name('payment.midtrans.token');

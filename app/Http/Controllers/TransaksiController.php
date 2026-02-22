@@ -18,31 +18,61 @@ class TransaksiController extends Controller
 
     /**
      * Menangani proses kendaraan masuk (check-in).
+     * Mendukung kendaraan terdaftar (id_kendaraan) atau kendaraan baru (plat_nomor + jenis_kendaraan).
      * Menggunakan transaction untuk mencegah race condition
      */
     public function checkIn(Request $request)
     {
-        $request->validate([
-            'id_kendaraan' => 'required|exists:tb_kendaraan,id_kendaraan',
-            'id_tarif' => 'required|exists:tb_tarif,id_tarif',
-            'id_area' => 'required|exists:tb_area_parkir,id_area',
-            'catatan' => 'nullable|string|max:255',
-        ]);
+        // Validasi: either id_kendaraan (terdaftar) atau plat_nomor + jenis_kendaraan (baru)
+        $isNewVehicle = $request->filled('vehicle_mode') && $request->vehicle_mode === 'new';
+
+        if ($isNewVehicle) {
+            $request->validate([
+                'plat_nomor' => 'required|string|max:15',
+                'jenis_kendaraan' => 'required|string|max:20',
+                'warna' => 'nullable|string|max:20',
+                'pemilik' => 'nullable|string|max:100',
+                'id_tarif' => 'required|exists:tb_tarif,id_tarif',
+                'id_area' => 'required|exists:tb_area_parkir,id_area',
+                'catatan' => 'nullable|string|max:255',
+            ]);
+            $platNormalized = $this->normalizePlatNomor($request->plat_nomor);
+            if (Kendaraan::whereRaw('UPPER(REPLACE(plat_nomor, \' \', \'\')) = ?', [$platNormalized])->exists()) {
+                return back()->withInput()->with('error', 'Plat nomor sudah terdaftar. Gunakan mode kendaraan terdaftar.');
+            }
+        } else {
+            $request->validate([
+                'id_kendaraan' => 'required|exists:tb_kendaraan,id_kendaraan',
+                'id_tarif' => 'required|exists:tb_tarif,id_tarif',
+                'id_area' => 'required|exists:tb_area_parkir,id_area',
+                'catatan' => 'nullable|string|max:255',
+            ]);
+        }
 
         try {
-            // Use transaction untuk atomic operation
-            $transaksi = DB::transaction(function () use ($request) {
-                // Lock area parkir untuk prevent race condition
+            $transaksi = DB::transaction(function () use ($request, $isNewVehicle) {
                 $area = AreaParkir::lockForUpdate()->findOrFail($request->id_area);
 
-                // Cek kapasitas dengan lock
                 if ($area->terisi >= $area->kapasitas) {
                     throw new \Exception('Kapasitas area parkir sudah penuh');
                 }
 
-                // Buat transaksi
+                $id_kendaraan = $request->id_kendaraan;
+
+                if ($isNewVehicle) {
+                    $platNormalized = $this->normalizePlatNomor($request->plat_nomor);
+                    $kendaraan = Kendaraan::create([
+                        'plat_nomor' => $platNormalized,
+                        'jenis_kendaraan' => $request->jenis_kendaraan,
+                        'warna' => $request->warna,
+                        'pemilik' => $request->pemilik,
+                        'id_user' => null,
+                    ]);
+                    $id_kendaraan = $kendaraan->id_kendaraan;
+                }
+
                 $transaksi = Transaksi::create([
-                    'id_kendaraan' => $request->id_kendaraan,
+                    'id_kendaraan' => $id_kendaraan,
                     'id_tarif' => $request->id_tarif,
                     'id_area' => $request->id_area,
                     'id_user' => Auth::id(),
@@ -51,7 +81,6 @@ class TransaksiController extends Controller
                     'catatan' => $request->catatan,
                 ]);
 
-                // Update kapasitas dengan atomic increment
                 $area->increment('terisi');
 
                 return $transaksi;
@@ -219,5 +248,13 @@ class TransaksiController extends Controller
     {
         Transaksi::destroy($id);
         return redirect()->route('transaksi.index')->with('success','Transaksi berhasil dihapus');
+    }
+
+    /**
+     * Normalisasi plat nomor: uppercase, hapus spasi
+     */
+    private function normalizePlatNomor(string $plat): string
+    {
+        return strtoupper(str_replace(' ', '', trim($plat)));
     }
 }

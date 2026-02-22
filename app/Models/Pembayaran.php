@@ -51,13 +51,8 @@ class Pembayaran extends Model
         return $query->where('status', 'berhasil');
     }
 
-    public function scopeManual($query)
+    public function scopeMidtrans($query)
     {
-        return $query->where('metode', 'manual');
-    }
-
-    public function scopeQrScan($query)
-    {
-        return $query->where('metode', 'qr_scan');
+        return $query->where('metode', 'midtrans');
     }
 }

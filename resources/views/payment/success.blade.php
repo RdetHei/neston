@@ -88,10 +88,8 @@
                 <div class="md:col-span-3">
                     <p class="text-gray-600">Metode Pembayaran</p>
                     <p class="font-bold">
-                        @if($transaksi->pembayaran && $transaksi->pembayaran->metode === 'manual')
-                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded">Manual - Petugas</span>
-                        @elseif($transaksi->pembayaran && $transaksi->pembayaran->metode)
-                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded">QR Scan - Otomatis</span>
+                        @if($transaksi->pembayaran && $transaksi->pembayaran->metode === 'midtrans')
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded">Midtrans - Online</span>
                         @else
                             <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded">Belum Dibayar</span>
                         @endif

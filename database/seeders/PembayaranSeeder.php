@@ -17,7 +17,7 @@ class PembayaranSeeder extends Seeder
             $p = Pembayaran::create([
                 'id_parkir' => $tx->id_parkir,
                 'nominal' => $tx->biaya_total ?? 0,
-                'metode' => 'qr_scan',
+                'metode' => 'midtrans',
                 'status' => 'berhasil',
                 'keterangan' => 'Seeded payment',
                 'id_user' => $tx->id_user,
@@ -26,20 +26,6 @@ class PembayaranSeeder extends Seeder
 
             // link back to transaksi
             $tx->update(['id_pembayaran' => $p->id_pembayaran]);
-        }
-
-        // Optionally create a pending payment for a specific transaction
-        $pendingTx = Transaksi::where('status_pembayaran','pending')->first();
-        if ($pendingTx) {
-            Pembayaran::create([
-                'id_parkir' => $pendingTx->id_parkir,
-                'nominal' => $pendingTx->biaya_total ?? 0,
-                'metode' => 'manual',
-                'status' => 'pending',
-                'keterangan' => 'Menunggu konfirmasi petugas',
-                'id_user' => 1,
-                'waktu_pembayaran' => null,
-            ]);
         }
     }
 }
