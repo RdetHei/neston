@@ -31,6 +31,7 @@ class ParkingSlotController extends Controller
         $summary = ['total' => 0, 'empty' => 0, 'occupied' => 0, 'reserved' => 0];
 
         if ($map) {
+            $currentUserId = auth()->id();
             $slotModels = ParkingMapSlot::where('parking_map_id', $map->id)
                 ->with(['areaParkir', 'camera'])
                 ->orderBy('code')
@@ -45,11 +46,18 @@ class ParkingSlotController extends Controller
                 $status = 'empty';
                 $vehiclePlate = null;
                 $areaName = $slot->areaParkir?->nama_area ?? null;
+                $transaksiId = null;
 
                 if (isset($activeBySlot[$slot->id])) {
                     $tx = $activeBySlot[$slot->id];
-                    $status = $tx['status'] === 'bookmarked' ? 'reserved' : 'occupied';
+                    $isMine = $currentUserId && $tx['user_id'] === $currentUserId;
+                    if ($tx['status'] === 'bookmarked') {
+                        $status = $isMine ? 'reserved-by-me' : 'reserved';
+                    } else {
+                        $status = 'occupied';
+                    }
                     $vehiclePlate = $tx['vehicle_plate'] ?? null;
+                    $transaksiId = $tx['transaksi_id'] ?? null;
                 } elseif ($slot->area_parkir_id && isset($activeByArea[$slot->area_parkir_id])) {
                     $tx = $activeByArea[$slot->area_parkir_id];
                     $status = $tx['status'] === 'bookmarked' ? 'reserved' : 'occupied';
@@ -69,6 +77,8 @@ class ParkingSlotController extends Controller
                     'notes' => $slot->notes,
                     'camera_id' => $slot->camera_id,
                     'meta' => $slot->meta,
+                    'area_id' => $slot->area_parkir_id,
+                    'transaksi_id' => $transaksiId,
                 ];
 
                 $summary['total']++;
@@ -130,6 +140,8 @@ class ParkingSlotController extends Controller
             $bySlot[$tx->parking_map_slot_id] = [
                 'status' => $tx->status,
                 'vehicle_plate' => $tx->kendaraan?->plat_nomor ?? null,
+                'user_id' => $tx->id_user,
+                'transaksi_id' => $tx->id_parkir,
             ];
         }
         return $bySlot;

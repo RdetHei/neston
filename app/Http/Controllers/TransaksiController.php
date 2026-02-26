@@ -87,16 +87,68 @@ class TransaksiController extends Controller
                     $id_kendaraan = $kendaraan->id_kendaraan;
                 }
 
-                $transaksi = Transaksi::create([
-                    'id_kendaraan' => $id_kendaraan,
-                    'id_tarif' => $request->id_tarif,
-                    'id_area' => $request->id_area,
-                    'parking_map_slot_id' => $request->parking_map_slot_id ?: null,
-                    'id_user' => Auth::id(),
-                    'waktu_masuk' => Carbon::now(),
-                    'status' => 'masuk',
-                    'catatan' => $request->catatan,
-                ]);
+                $now = Carbon::now();
+                $slotId = $request->parking_map_slot_id ?: null;
+
+                // Jika ada booking (bookmarked) aktif untuk slot/area ini, gunakan transaksi tersebut (konversi menjadi masuk)
+                $tenMinutesAgo = Carbon::now()->subMinutes(10);
+                $bookmarkedTx = null;
+
+                if ($slotId) {
+                    $bookmarkedTx = Transaksi::lockForUpdate()
+                        ->where('status', 'bookmarked')
+                        ->whereNotNull('bookmarked_at')
+                        ->where('bookmarked_at', '>', $tenMinutesAgo)
+                        ->where('parking_map_slot_id', $slotId)
+                        ->first();
+                }
+
+                if (!$bookmarkedTx) {
+                    $bookmarkedTx = Transaksi::lockForUpdate()
+                        ->where('status', 'bookmarked')
+                        ->whereNotNull('bookmarked_at')
+                        ->where('bookmarked_at', '>', $tenMinutesAgo)
+                        ->where('id_area', $request->id_area)
+                        ->whereNull('parking_map_slot_id')
+                        ->first();
+                }
+
+                if ($bookmarkedTx) {
+                    $bookingUserName = $bookmarkedTx->user?->name;
+                    $bookingAt = $bookmarkedTx->bookmarked_at ? $bookmarkedTx->bookmarked_at->format('d/m/Y H:i') : null;
+                    $prefix = 'Booking';
+                    if ($bookingUserName) {
+                        $prefix .= ' oleh ' . $bookingUserName;
+                    }
+                    if ($bookingAt) {
+                        $prefix .= ' (' . $bookingAt . ')';
+                    }
+
+                    $bookmarkedTx->update([
+                        'id_kendaraan' => $id_kendaraan,
+                        'id_tarif' => $request->id_tarif,
+                        'id_area' => $request->id_area,
+                        'parking_map_slot_id' => $slotId,
+                        'id_user' => Auth::id(), // operator/petugas
+                        'waktu_masuk' => $now,
+                        'status' => 'masuk',
+                        'catatan' => trim($prefix . '. ' . ($request->catatan ?? $bookmarkedTx->catatan ?? '')),
+                        'bookmarked_at' => null,
+                    ]);
+
+                    $transaksi = $bookmarkedTx;
+                } else {
+                    $transaksi = Transaksi::create([
+                        'id_kendaraan' => $id_kendaraan,
+                        'id_tarif' => $request->id_tarif,
+                        'id_area' => $request->id_area,
+                        'parking_map_slot_id' => $slotId,
+                        'id_user' => Auth::id(),
+                        'waktu_masuk' => $now,
+                        'status' => 'masuk',
+                        'catatan' => $request->catatan,
+                    ]);
+                }
 
                 $area->increment('terisi');
 

@@ -51,8 +51,8 @@ Route::get('/forgot-password', function () {
 
 // Protected Routes - Require Authentication
 Route::middleware(['auth'])->group(function () {
-    // API & halaman Peta Parkir: hanya admin dan petugas (sesuai kebutuhan operasional parkir)
-    Route::middleware(['role:admin,petugas'])->group(function () {
+    // API & halaman Peta Parkir: admin, petugas, dan user (user hanya untuk lihat & booking slot)
+    Route::middleware(['role:admin,petugas,user'])->group(function () {
         // Halaman peta parkir (Leaflet + image overlay)
         Route::get('/parking-map', [ParkingSlotController::class, 'view'])->name('parking.map.index');
         // API data slot + kamera + summary (untuk Leaflet)
@@ -82,9 +82,99 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/petugas/dashboard', [PetugasDashboardController::class, 'index'])->name('petugas.dashboard')->middleware('role:petugas');
 
     // User Dashboard
-    Route::get('/user/dashboard', function () {
-        return view('user.dashboard');
+    Route::get('/user/dashboard', function (\Illuminate\Http\Request $request) {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $totalKendaraan = \App\Models\Kendaraan::where('id_user', $user->id)->count();
+        $totalTransaksi = \App\Models\Transaksi::where('id_user', $user->id)->count();
+        $transaksiAktif = \App\Models\Transaksi::where('id_user', $user->id)
+            ->where('status', 'masuk')
+            ->count();
+
+        $totalPembayaran = \App\Models\Pembayaran::where('id_user', $user->id)->count();
+        $totalPengeluaran = \App\Models\Pembayaran::where('id_user', $user->id)
+            ->where('status', 'berhasil')
+            ->sum('nominal');
+
+        $riwayatTransaksi = \App\Models\Transaksi::with(['kendaraan', 'area', 'tarif'])
+            ->where('id_user', $user->id)
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
+        $riwayatPembayaran = \App\Models\Pembayaran::with(['transaksi'])
+            ->where('id_user', $user->id)
+            ->orderByDesc('waktu_pembayaran')
+            ->limit(5)
+            ->get();
+
+        return view('user.dashboard', compact(
+            'user',
+            'totalKendaraan',
+            'totalTransaksi',
+            'transaksiAktif',
+            'totalPembayaran',
+            'totalPengeluaran',
+            'riwayatTransaksi',
+            'riwayatPembayaran'
+        ));
     })->name('user.dashboard');
+
+    // User: Kelola kendaraan milik sendiri
+    Route::get('/user/vehicles', [\App\Http\Controllers\UserVehicleController::class, 'index'])->name('user.vehicles.index');
+    Route::post('/user/vehicles', [\App\Http\Controllers\UserVehicleController::class, 'store'])->name('user.vehicles.store');
+    Route::put('/user/vehicles/{vehicle}', [\App\Http\Controllers\UserVehicleController::class, 'update'])->name('user.vehicles.update');
+    Route::delete('/user/vehicles/{vehicle}', [\App\Http\Controllers\UserVehicleController::class, 'destroy'])->name('user.vehicles.destroy');
+
+    // User: Booking slot (area-based bookmark)
+    Route::get('/user/bookings', function (\Illuminate\Http\Request $request) {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $areas = \App\Models\AreaParkir::orderBy('nama_area')->get();
+        $map = \App\Models\ParkingMap::getDefaultOrFirst();
+        $kendaraans = \App\Models\Kendaraan::where('id_user', $user->id)->orderBy('plat_nomor')->get();
+        $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();
+
+        // Hitung status per area (kosong / terisi / dibookmark)
+        $now = \Carbon\Carbon::now();
+        $statusPerArea = [];
+        $myBookingIds = [];
+
+        foreach ($areas as $area) {
+            $existing = \App\Models\Transaksi::where('id_area', $area->id_area)
+                ->where(function ($q) use ($now) {
+                    $q->where(function ($q2) {
+                        $q2->whereNull('waktu_keluar')
+                            ->where('status', 'masuk');
+                    })->orWhere(function ($q2) use ($now) {
+                        $q2->where('status', 'bookmarked')
+                            ->where('bookmarked_at', '>', $now->copy()->subMinutes(10));
+                    });
+                })
+                ->first();
+
+            if (! $existing) {
+                $statusPerArea[$area->id_area] = 'empty';
+            } elseif ($existing->status === 'bookmarked' && $existing->id_user === $user->id) {
+                $statusPerArea[$area->id_area] = 'bookmarked-by-me';
+                $myBookingIds[$area->id_area] = $existing->id_parkir;
+            } elseif ($existing->status === 'bookmarked') {
+                $statusPerArea[$area->id_area] = 'bookmarked';
+            } else {
+                $statusPerArea[$area->id_area] = 'occupied';
+            }
+        }
+
+        return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs'));
+    })->name('user.bookings');
+
+    Route::post('/user/bookings/areas/{area}', [\App\Http\Controllers\Api\ParkingMapController::class, 'bookmark'])
+        ->name('user.bookings.book');
+
+    Route::delete('/user/bookings/areas/{transaksi}', [\App\Http\Controllers\Api\ParkingMapController::class, 'unbookmark'])
+        ->name('user.bookings.unbook');
 
     // ========== ADMIN ONLY (sesuai Tabel Fitur SPK) ==========
     // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, CRUD Layout Peta, Akses Log Aktifitas, Cetak struk parkir

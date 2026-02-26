@@ -16,8 +16,14 @@
             @php $role = auth()->user()->role ?? 'user'; @endphp
             <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto sidebar-nav">
                 {{-- Dashboard: link sesuai role (sesuai SPK) --}}
-                <a href="{{ $role === 'owner' ? route('owner.dashboard') : ($role === 'petugas' ? route('petugas.dashboard') : route('dashboard')) }}"
-                   class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('dashboard', 'owner.dashboard', 'petugas.dashboard') ? 'bg-green-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
+                <a href="{{ $role === 'owner'
+                            ? route('owner.dashboard')
+                            : ($role === 'petugas'
+                                ? route('petugas.dashboard')
+                                : ($role === 'admin'
+                                    ? route('dashboard')
+                                    : route('user.dashboard'))) }}"
+                   class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('dashboard', 'owner.dashboard', 'petugas.dashboard', 'user.dashboard') ? 'bg-green-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                     </svg>

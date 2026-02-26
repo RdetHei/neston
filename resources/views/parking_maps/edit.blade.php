@@ -88,14 +88,17 @@
     @endcomponent
 
     {{-- Posisi kamera di peta --}}
-    <div class="mt-8 bg-white shadow-lg rounded-lg overflow-hidden">
+    <div class="mt-8 bg-white shadow-lg rounded-2xl overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-            <h3 class="text-base font-bold text-gray-900">Lokasi kamera di peta</h3>
+            <div>
+                <h3 class="text-base font-bold text-gray-900">Lokasi kamera di peta</h3>
+                <p class="mt-0.5 text-xs text-gray-500">Klik pada gambar peta untuk mengisi koordinat kamera secara otomatis.</p>
+            </div>
             <a href="{{ route('parking-maps.slots.index', $item) }}" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
                 Kelola slot →
             </a>
         </div>
-        <div class="p-6">
+        <div class="p-6 space-y-5">
             @if(session('success'))
                 <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">{{ session('success') }}</div>
             @endif
@@ -103,27 +106,83 @@
                 <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">{{ session('error') }}</div>
             @endif
 
-            <form action="{{ route('parking-maps.cameras.store', $item) }}" method="POST" class="flex flex-wrap items-end gap-4 mb-6">
-                @csrf
-                <div>
-                    <label for="cam_camera_id" class="block text-xs font-medium text-gray-600 mb-1">Kamera</label>
-                    <select name="camera_id" id="cam_camera_id" required class="block w-56 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
-                        <option value="">-- Pilih kamera --</option>
-                        @foreach($cameras as $c)
-                            <option value="{{ $c->id }}">{{ $c->nama }} ({{ $c->tipe }})</option>
-                        @endforeach
-                    </select>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+                <div class="lg:col-span-2 space-y-3">
+                    @if($item->image_path)
+                        <div class="overflow-auto rounded-xl border border-dashed border-gray-200 bg-slate-50/70 p-3">
+                            <div
+                                id="camera-map-clickable"
+                                class="relative bg-center bg-no-repeat rounded-lg shadow-inner cursor-crosshair transition-transform duration-150 hover:scale-[1.01]"
+                                style="
+                                    width: {{ $item->width }}px;
+                                    height: {{ $item->height }}px;
+                                    background-image: url('{{ asset($item->image_path) }}');
+                                    background-size: contain;
+                                    background-color: #020617;
+                                "
+                            >
+                                @if($item->mapCameras && $item->mapCameras->count())
+                                    @foreach($item->mapCameras as $pmc)
+                                        <div
+                                            class="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+                                            style="left: {{ $pmc->x }}px; top: {{ $pmc->y }}px;"
+                                        >
+                                            <div class="h-5 w-5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40 ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-white">
+                                                C
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
+                                <div
+                                    id="camera-preview"
+                                    class="absolute -translate-x-1/2 -translate-y-1/2 hidden"
+                                >
+                                    <div class="h-5 w-5 rounded-full bg-sky-500 shadow-lg shadow-sky-500/40 ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-white">
+                                        +
+                                    </div>
+                                </div>
+                                <div class="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/5"></div>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-500">
+                            Titik <span class="font-mono text-xs text-gray-700">(0, 0)</span> berada di kiri atas gambar. Klik peta untuk mengisi koordinat kamera secara otomatis.
+                        </p>
+                    @else
+                        <p class="text-xs text-gray-500">
+                            Setel terlebih dahulu gambar layout peta untuk mengaktifkan pemetaan kamera secara visual.
+                        </p>
+                    @endif
                 </div>
+
                 <div>
-                    <label for="cam_x" class="block text-xs font-medium text-gray-600 mb-1">X (px)</label>
-                    <input type="number" name="x" id="cam_x" value="100" min="0" class="block w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
+                    <form action="{{ route('parking-maps.cameras.store', $item) }}" method="POST" class="space-y-3">
+                        @csrf
+                        <div>
+                            <label for="cam_camera_id" class="block text-xs font-medium text-gray-600 mb-1">Kamera</label>
+                            <select name="camera_id" id="cam_camera_id" required class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
+                                <option value="">-- Pilih kamera --</option>
+                                @foreach($cameras as $c)
+                                    <option value="{{ $c->id }}">{{ $c->nama }} ({{ $c->tipe }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="cam_x" class="block text-xs font-medium text-gray-600 mb-1">X (px)</label>
+                                <input type="number" name="x" id="cam_x" value="100" min="0" class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
+                            </div>
+                            <div>
+                                <label for="cam_y" class="block text-xs font-medium text-gray-600 mb-1">Y (px)</label>
+                                <input type="number" name="y" id="cam_y" value="100" min="0" class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-500">Klik peta di kiri untuk mengisi nilai X/Y, atau sesuaikan secara manual di sini.</p>
+                        <button type="submit" class="w-full justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg flex items-center gap-2">
+                            <span>Tambah posisi</span>
+                        </button>
+                    </form>
                 </div>
-                <div>
-                    <label for="cam_y" class="block text-xs font-medium text-gray-600 mb-1">Y (px)</label>
-                    <input type="number" name="y" id="cam_y" value="100" min="0" class="block w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
-                </div>
-                <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg">Tambah posisi</button>
-            </form>
+            </div>
 
             @if($item->mapCameras && $item->mapCameras->count())
                 <table class="w-full text-sm">
@@ -153,9 +212,53 @@
                     </tbody>
                 </table>
             @else
-                <p class="text-gray-500 text-sm">Belum ada kamera ditempatkan di peta ini. Tambah posisi (X, Y) sesuai koordinat pixel di floor plan.</p>
+                <p class="text-gray-500 text-sm">Belum ada kamera ditempatkan di peta ini. Klik peta di atas untuk memilih posisi, lalu simpan.</p>
             @endif
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const map = document.getElementById('camera-map-clickable');
+            if (!map) return;
+
+            const xInput = document.getElementById('cam_x');
+            const yInput = document.getElementById('cam_y');
+            const preview = document.getElementById('camera-preview');
+
+            function updatePreview() {
+                if (!preview || !map) return;
+                const rect = map.getBoundingClientRect();
+                const x = parseInt(xInput.value || '0', 10);
+                const y = parseInt(yInput.value || '0', 10);
+
+                preview.style.left = x + 'px';
+                preview.style.top = y + 'px';
+                preview.classList.remove('hidden');
+            }
+
+            map.addEventListener('click', function (e) {
+                const rect = map.getBoundingClientRect();
+                let x = e.clientX - rect.left;
+                let y = e.clientY - rect.top;
+
+                x = Math.round(Math.max(0, Math.min(x, rect.width)));
+                y = Math.round(Math.max(0, Math.min(y, rect.height)));
+
+                xInput.value = x;
+                yInput.value = y;
+
+                updatePreview();
+            });
+
+            [xInput, yInput].forEach(function (el) {
+                el.addEventListener('input', updatePreview);
+            });
+
+            updatePreview();
+        });
+    </script>
+@endpush
 

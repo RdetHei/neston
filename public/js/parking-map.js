@@ -31,6 +31,8 @@ if (!container) {
                 return '#dc2626';
             case 'reserved':
                 return '#ea580c';
+            case 'reserved-by-me':
+                return '#2563eb';
             case 'empty':
             default:
                 return '#16a34a';
@@ -72,6 +74,11 @@ if (!container) {
         return parts.join('');
     }
 
+    const bookUrlTemplate = container.dataset.bookUrlTemplate || null;
+    const unbookUrlTemplate = container.dataset.unbookUrlTemplate || null;
+    const csrfToken = container.dataset.csrfToken || null;
+    const bookingEnabled = !!bookUrlTemplate && !!csrfToken;
+
     function renderSlots(slots) {
         slotsLayer.clearLayers();
         if (!Array.isArray(slots)) return;
@@ -90,6 +97,60 @@ if (!container) {
 
             rect.bindPopup(buildSlotPopup(slot));
             rect.addTo(slotsLayer);
+
+            if (bookingEnabled) {
+                rect.on('click', async function () {
+                    try {
+                        if (slot.status === 'empty') {
+                            if (!slot.area_id) return;
+                            const kendaraanEl = document.getElementById('booking_kendaraan_id');
+                            const tarifEl = document.getElementById('booking_tarif_id');
+                            const kendaraanId = kendaraanEl ? kendaraanEl.value : '';
+                            const tarifId = tarifEl ? tarifEl.value : '';
+                            if (!kendaraanId || !tarifId) {
+                                alert('Pilih kendaraan dan tarif terlebih dahulu sebelum booking.');
+                                return;
+                            }
+                            const url = bookUrlTemplate.replace('AREA_ID_PLACEHOLDER', encodeURIComponent(slot.area_id));
+                            const body = new URLSearchParams();
+                            body.append('_token', csrfToken);
+                            if (slot.id) {
+                                body.append('parking_map_slot_id', String(slot.id));
+                            }
+                            if (slot.code) {
+                                body.append('slot_code', String(slot.code));
+                            }
+                            body.append('id_kendaraan', String(kendaraanId));
+                            body.append('id_tarif', String(tarifId));
+                            await fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: body.toString()
+                            });
+                        } else if (slot.status === 'reserved-by-me' && slot.transaksi_id && unbookUrlTemplate) {
+                            const url = unbookUrlTemplate.replace('TRANS_ID_PLACEHOLDER', encodeURIComponent(slot.transaksi_id));
+                            const body = new URLSearchParams();
+                            body.append('_token', csrfToken);
+                            body.append('_method', 'DELETE');
+                            await fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: body.toString()
+                            });
+                        }
+                    } catch (err) {
+                        console.error('Booking/unbooking slot error', err);
+                    } finally {
+                        fetchData();
+                    }
+                });
+            }
         });
     }
 

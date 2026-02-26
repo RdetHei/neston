@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\AreaParkir;
 use App\Models\Transaksi;
+use App\Models\ParkingMapSlot;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth; // Import Auth facade
 
@@ -45,12 +46,12 @@ class ParkingMapController extends Controller
                 ];
             } elseif ($bookmarkedTransaction) {
                 $status = 'bookmarked';
-                $bookmarkedBy = $bookmarkedTransaction->user->name ?? 'N/A';
-                $bookmarkedAt = $bookmarkedTransaction->bookmarked_at->format('H:i') ?? 'N/A';
+                $bookmarkedBy = $bookmarkedTransaction->user->name ?? null;
+                $bookmarkedAt = $bookmarkedTransaction->bookmarked_at;
                 // Add id_transaksi for bookmarked slot to allow unbookmarking/check-in
                 $vehicle = [
                     'id_transaksi' => $bookmarkedTransaction->id_parkir,
-                    'operator' => $bookmarkedBy, // User who bookmarked
+                    'operator' => $bookmarkedBy,
                     'bookmarked_at' => $bookmarkedAt,
                 ];
             }
@@ -83,6 +84,32 @@ class ParkingMapController extends Controller
             return response()->json(['message' => 'Area parkir tidak ditemukan.'], 404);
         }
 
+        $request->validate([
+            'id_kendaraan' => 'required|exists:tb_kendaraan,id_kendaraan',
+            'id_tarif' => 'required|exists:tb_tarif,id_tarif',
+            'parking_map_slot_id' => 'nullable|exists:tb_parking_map_slots,id',
+            'slot_code' => 'nullable|string|max:50',
+        ]);
+
+        // Untuk user: pastikan kendaraan milik user
+        $kendaraan = \App\Models\Kendaraan::find($request->id_kendaraan);
+        if (!$kendaraan || (int) $kendaraan->id_user !== (int) Auth::id()) {
+            return response()->json(['message' => 'Kendaraan tidak valid untuk akun Anda.'], 403);
+        }
+
+        // Optional: booking per slot (parking_map_slot_id) untuk integrasi dengan peta visual
+        $slotId = $request->input('parking_map_slot_id');
+        $slotCode = $request->input('slot_code');
+        $parkingMapSlotId = null;
+
+        if ($slotId) {
+            $slot = ParkingMapSlot::find($slotId);
+            if (!$slot || (int) $slot->area_parkir_id !== (int) $area->id_area) {
+                return response()->json(['message' => 'Slot tidak valid untuk area ini.'], 422);
+            }
+            $parkingMapSlotId = $slot->id;
+        }
+
         // Check if area is actually empty (no active 'masuk' or unexpired 'bookmarked' transactions)
         $existingActiveTransaction = Transaksi::where('id_area', $area->id_area)
             ->where(function($query) {
@@ -100,16 +127,18 @@ class ParkingMapController extends Controller
 
         // Create a new Transaksi entry for bookmarking
         $transaksi = Transaksi::create([
-            'id_kendaraan' => null, // No vehicle yet
-            'waktu_masuk' => null,  // No check-in yet
+            'id_kendaraan' => $request->id_kendaraan,
+            // Simpan waktu booking sebagai waktu_masuk (akan dioverwrite saat check-in)
+            'waktu_masuk' => Carbon::now(),
             'waktu_keluar' => null,
-            'id_tarif' => null, // No tariff yet
+            'id_tarif' => $request->id_tarif,
             'durasi_jam' => null,
             'biaya_total' => 0,
             'status' => 'bookmarked',
-            'catatan' => 'Slot dibookmark',
+            'catatan' => $slotCode ? ('Booking slot ' . $slotCode) : 'Slot dibookmark',
             'id_user' => Auth::id(), // User who bookmarked
             'id_area' => $area->id_area,
+            'parking_map_slot_id' => $parkingMapSlotId,
             'status_pembayaran' => 'pending',
             'id_pembayaran' => null,
             'bookmarked_at' => Carbon::now(),
