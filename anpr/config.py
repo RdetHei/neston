@@ -1,0 +1,21 @@
+import os
+
+# API Settings
+PLATE_RECOGNIZER_TOKEN = "4adc37a587c417106221ce821d6c3dad3aca1d04"
+LARAVEL_API_URL = "http://localhost/api/anpr-detection"
+LARAVEL_API_TOKEN = "" # Add if needed
+
+# YOLO Settings
+# Use 'yolov8n.pt' for better CPU performance (Nano model)
+YOLO_MODEL_PATH = 'yolov8n.pt'
+CONFIDENCE_THRESHOLD = 0.5
+OCR_CONFIDENCE_THRESHOLD = 0.8
+
+# Camera Settings
+CAMERA_INDEX = 0 # 0 for default webcam
+SCAN_INTERVAL = 2 # Seconds
+
+# Paths
+SAVE_CROP_DIR = 'crops'
+if not os.path.exists(SAVE_CROP_DIR):
+    os.makedirs(SAVE_CROP_DIR)

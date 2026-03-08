@@ -24,6 +24,7 @@ if (!container) {
 
     const slotsLayer = L.layerGroup().addTo(map);
     const camerasLayer = L.layerGroup().addTo(map);
+    const userMarkerLayer = L.layerGroup().addTo(map);
 
     function getSlotColor(status) {
         switch (status) {
@@ -128,6 +129,33 @@ if (!container) {
     function renderSlots(slots) {
         slotsLayer.clearLayers();
         if (!Array.isArray(slots)) return;
+
+        // Find my parked slot if any
+        const mySlot = slots.find(s => s.status === 'reserved-by-me' || (s.status === 'occupied' && s.is_mine));
+        if (mySlot) {
+            const latLng = L.latLng(mySlot.y + (mySlot.height / 2), mySlot.x + (mySlot.width / 2));
+            
+            userMarkerLayer.clearLayers();
+            const userIcon = L.divIcon({
+                className: 'user-location-marker',
+                html: `
+                    <div class="relative flex items-center justify-center">
+                        <div class="absolute w-12 h-12 bg-indigo-500/20 rounded-full animate-ping"></div>
+                        <div class="w-8 h-8 bg-indigo-600 rounded-full border-4 border-white shadow-xl flex items-center justify-center text-white">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                    </div>
+                `,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+
+            L.marker(latLng, { icon: userIcon })
+                .bindPopup('<div class="p-2 font-bold text-center">Lokasi Kendaraan Anda</div>')
+                .addTo(userMarkerLayer);
+        }
 
         slots.forEach(function (slot) {
             const topLeft = L.latLng(slot.y, slot.x);

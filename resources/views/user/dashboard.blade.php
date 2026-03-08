@@ -5,63 +5,91 @@
         <div class="max-w-6xl mx-auto space-y-8">
             <div class="flex items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-semibold tracking-wide text-emerald-600 uppercase">Selamat datang</p>
-                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">
+                    <p class="text-xs font-bold tracking-widest text-zinc-400 uppercase">Selamat datang</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-zinc-900">
                         {{ $user->name }}
                     </h1>
-                    <p class="mt-1 text-sm text-gray-500">
+                    <p class="mt-1 text-sm text-zinc-500">
                         Ringkasan aktivitas parkir pribadi Anda.
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <a href="{{ route('user.vehicles.index') }}"
-                       class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                       class="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 transition-colors">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
                         </svg>
                         Kendaraan saya
                     </a>
                     <a href="{{ route('user.bookings') }}"
-                       class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800 shadow-sm hover:bg-emerald-100">
+                       class="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 transition-colors">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
                         Booking slot
                     </a>
-                    <a href="{{ route('user.bills') }}"
-                       class="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 shadow-sm hover:bg-amber-100">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M7 7h10a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z"></path>
-                        </svg>
-                        Tagihan saya
-                    </a>
                     <a href="{{ route('user.profile') }}"
-                       class="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-800 shadow-sm hover:bg-blue-100">
+                       class="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 transition-colors">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
-                        Edit Profil
+                        Profil
                     </a>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white rounded-2xl p-4 border border-gray-200">
-                    <p class="text-xs font-medium text-gray-500">Kendaraan saya</p>
-                    <p class="mt-2 text-2xl font-bold text-gray-900">{{ $totalKendaraan }}</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- NestonPay Wallet (Modernized Dark Card) -->
+                <div class="md:col-span-2 bg-zinc-900 rounded-[2rem] p-8 text-white shadow-2xl shadow-zinc-200 relative overflow-hidden flex flex-col justify-between group">
+                    <div class="absolute -right-10 -top-10 w-48 h-48 bg-zinc-800 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-700"></div>
+                    <div class="absolute right-20 bottom-0 w-32 h-32 bg-zinc-800 rounded-full opacity-30 group-hover:-translate-y-4 transition-transform duration-700"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest">NestonPay Balance</span>
+                        </div>
+                        <h2 class="text-4xl font-extrabold tracking-tight">Rp {{ number_format($user->saldo, 0, ',', '.') }}</h2>
+                    </div>
+                    
+                    <div class="relative z-10 flex gap-3 mt-10">
+                        <a href="{{ route('user.saldo.index') }}" class="px-5 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-bold transition-all border border-zinc-700">
+                            Riwayat Saldo
+                        </a>
+                        <a href="{{ route('user.saldo.topup') }}" class="px-5 py-3 bg-white text-zinc-900 rounded-xl text-xs font-bold transition-all shadow-lg hover:bg-zinc-100 active:scale-95">
+                            Top Up Saldo
+                        </a>
+                    </div>
                 </div>
-                <div class="bg-white rounded-2xl p-4 border border-gray-200">
-                    <p class="text-xs font-medium text-gray-500">Total transaksi</p>
-                    <p class="mt-2 text-2xl font-bold text-gray-900">{{ $totalTransaksi }}</p>
+
+                <div class="card-modern p-6 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center text-zinc-900 border border-zinc-100">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 px-2 py-1 rounded-lg">Aktif</span>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-extrabold text-zinc-900 tracking-tight">{{ $transaksiAktif }}</p>
+                        <p class="text-xs text-zinc-500 font-medium">Parkir aktif saat ini</p>
+                    </div>
                 </div>
-                <div class="bg-white rounded-2xl p-4 border border-gray-200">
-                    <p class="text-xs font-medium text-gray-500">Parkir aktif</p>
-                    <p class="mt-2 text-2xl font-bold text-emerald-600">{{ $transaksiAktif }}</p>
-                </div>
-                <div class="bg-white rounded-2xl p-4 border border-gray-200">
-                    <p class="text-xs font-medium text-gray-500">Tagihan belum dibayar</p>
-                    <p class="mt-2 text-2xl font-bold text-amber-600">{{ $transaksiBelumDibayar }}</p>
-                    <p class="mt-1 text-[11px] text-gray-500">Segera selesaikan pembayaran untuk menghindari masalah di loket keluar.</p>
+
+                <div class="card-modern p-6 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center text-zinc-900 border border-zinc-100">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-100 px-2 py-1 rounded-lg">Tagihan</span>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-extrabold text-zinc-900 tracking-tight">{{ $transaksiBelumDibayar }}</p>
+                        <p class="text-xs text-zinc-500 font-medium">Tagihan belum dibayar</p>
+                    </div>
                 </div>
             </div>
 

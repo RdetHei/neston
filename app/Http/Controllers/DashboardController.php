@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Kendaraan;
 use App\Models\Transaksi;
 use App\Models\Pembayaran;
 use App\Models\AreaParkir;
 use App\Models\User;
-use App\Models\LogAktivitas;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -45,6 +44,22 @@ class DashboardController extends Controller
             $grafikPendapatan['data'][] = $value;
         }
 
+        // Analisis Pendapatan Per Jam (Heatmap Data)
+        $revenueByHour = [];
+        for ($h = 0; $h < 24; $h++) {
+            $revenueByHour[$h] = Pembayaran::where('status', 'berhasil')
+                ->whereHour('waktu_pembayaran', $h)
+                ->sum('nominal');
+        }
+
+        // Analisis Area Terfavorit (Berdasarkan jumlah transaksi)
+        $topAreas = Transaksi::select('id_area', DB::raw('count(*) as total'))
+            ->groupBy('id_area')
+            ->with('area')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
         // Data Grafik: Jenis Kendaraan (Pie)
         $grafikKendaraan = [
             'labels' => ['Mobil', 'Motor'],
@@ -77,7 +92,9 @@ class DashboardController extends Controller
             'areaParkir',
             'grafikPendapatan',
             'grafikKendaraan',
-            'aktivitasTerbaru'
+            'aktivitasTerbaru',
+            'revenueByHour',
+            'topAreas'
         ));
     }
 }

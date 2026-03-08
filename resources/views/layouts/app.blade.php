@@ -1,18 +1,25 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>NESTON</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>@yield('title', $title ?? 'Neston')</title>
+
     <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
     <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    @vite('resources/css/app.css')
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
-<body class="bg-gray-100" data-sidebar="expanded">
+<body class="bg-[#fafafa]" data-sidebar="expanded">
         {{-- Layout wrapper: sidebar + main content --}}
         <div class="min-h-screen flex">
             @include('components.sidebar')
@@ -55,5 +62,28 @@
 
         @stack('scripts')
 
+    <script>
+        // Check for notifications
+        function checkNotifications() {
+            // Simulated real-time check for new activities
+            // In a real app, this would use Pusher or Echo
+            const hasNewNotify = localStorage.getItem('neston_new_activity');
+            if (hasNewNotify) {
+                if (window.Notification && Notification.permission === "granted") {
+                    new Notification("Neston Update", {
+                        body: "Ada aktivitas parkir baru pada akun Anda.",
+                        icon: "/favicon.ico"
+                    });
+                    localStorage.removeItem('neston_new_activity');
+                }
+            }
+        }
+
+        if (window.Notification && Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+
+        setInterval(checkNotifications, 10000);
+    </script>
 </body>
 </html>

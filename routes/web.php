@@ -66,6 +66,12 @@ Route::middleware(['auth'])->group(function () {
         // Plate Recognizer API
         Route::post('/scan-plate', [\App\Http\Controllers\Api\PlateRecognizerController::class, 'scanPlate'])->name('api.scan-plate');
 
+        // New ANPR Features
+        Route::get('/anpr', function () {
+            return view('anpr.index');
+        })->name('anpr.index');
+        Route::post('/api/anpr/scan', [\App\Http\Controllers\ANPRController::class, 'scan'])->name('api.anpr.scan');
+
         // Kendaraan search (autocomplete)
         Route::get('/api/kendaraan/search', [\App\Http\Controllers\Api\KendaraanSearchController::class, 'search'])->name('api.kendaraan.search');
         Route::get('/api/kendaraan/check-plat', [\App\Http\Controllers\Api\KendaraanSearchController::class, 'checkPlat'])->name('api.kendaraan.check-plat');
@@ -223,6 +229,12 @@ Route::middleware(['auth'])->group(function () {
     // User: Tagihan sendiri (transaksi keluar tapi belum dibayar)
     Route::get('/user/bills', [\App\Http\Controllers\PaymentController::class, 'userBills'])
         ->name('user.bills');
+
+    // User: Saldo NestonPay
+    Route::get('/user/saldo', [\App\Http\Controllers\SaldoController::class, 'index'])->name('user.saldo.index');
+    Route::get('/user/saldo/topup', [\App\Http\Controllers\SaldoController::class, 'topup'])->name('user.saldo.topup');
+    Route::post('/user/saldo/topup', [\App\Http\Controllers\SaldoController::class, 'storeTopupManual'])->name('user.saldo.topup.store');
+    Route::post('/user/saldo/pay/{id_parkir}', [\App\Http\Controllers\SaldoController::class, 'processPayWithSaldo'])->name('user.saldo.pay');
 
     // ========== ADMIN ONLY (sesuai Tabel Fitur SPK) ==========
     // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, CRUD Layout Peta, Akses Log Aktifitas, Cetak struk parkir

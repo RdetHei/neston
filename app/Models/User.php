@@ -30,7 +30,13 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'saldo',
     ];
+
+    public function saldoHistories()
+    {
+        return $this->hasMany(SaldoHistory::class, 'user_id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
