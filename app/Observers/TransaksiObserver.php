@@ -28,6 +28,7 @@ class TransaksiObserver
             $transaksi->status === 'masuk'
             && $transaksi->waktu_masuk
             && $transaksi->id_user
+            && !$transaksi->wasRecentlyCreated // Hindari dobel trigger jika created sudah handle
         ) {
             $transaksi->loadMissing(['kendaraan', 'area', 'user']);
             event(new ParkingCheckedIn($transaksi));
@@ -59,6 +60,7 @@ class TransaksiObserver
             && $transaksi->getOriginal('waktu_keluar') === null
             && $transaksi->waktu_keluar
             && $checkoutStatus
+            && !$transaksi->wasRecentlyCreated // Hindari dobel trigger saat checkout langsung setelah create
         ) {
             $transaksi->loadMissing(['kendaraan', 'area', 'user', 'tarif']);
             if ($transaksi->notifyTargetUser()) {

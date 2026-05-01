@@ -17,6 +17,7 @@
             </div>
 
             <div class="flex items-center gap-3 bg-slate-900/50 p-1.5 rounded-2xl border border-white/5 backdrop-blur-xl">
+                @if($maps->count() > 1)
                 <div class="flex items-center gap-2 px-4 py-2">
                     <i class="fa-solid fa-layer-group text-slate-500 text-xs"></i>
                     <select id="area-selector" onchange="window.location.href='{{ route('parking.map.index') }}?map_id=' + this.value"
@@ -27,6 +28,13 @@
                     </select>
                 </div>
                 <div class="w-px h-4 bg-white/10"></div>
+                @else
+                <div class="flex items-center gap-2 px-4 py-2">
+                    <i class="fa-solid fa-location-dot text-emerald-500 text-xs"></i>
+                    <span class="text-white text-[10px] font-black uppercase tracking-widest">{{ $area->nama_area ?? 'Area Aktif' }}</span>
+                </div>
+                <div class="w-px h-4 bg-white/10"></div>
+                @endif
                 <button onclick="refreshMapData()" class="p-2.5 text-slate-400 hover:text-white transition-colors group" title="Manual Refresh">
                     <i class="fa-solid fa-arrows-rotate text-xs group-active:rotate-180 transition-transform duration-500"></i>
                 </button>

@@ -228,7 +228,7 @@
                                         <i class="fa-solid fa-eye text-xs"></i>
                                     </a>
 
-                                    @if(auth()->user()->role === 'admin' && $currentStatus === 'riwayat')
+                                    @if((auth()->user()->role === 'admin' || auth()->user()->role === 'petugas') && $currentStatus === 'riwayat')
                                         <a href="{{ route('transaksi.print', $transaksi->id_parkir) }}"
                                            class="w-9 h-9 flex items-center justify-center text-indigo-400 hover:text-white hover:bg-indigo-500 rounded-lg transition-all"
                                            title="Cetak Struk">

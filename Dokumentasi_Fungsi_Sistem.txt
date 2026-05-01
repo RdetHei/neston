@@ -1,0 +1,97 @@
+DOKUMENTASI FUNGSI DAN PROSEDUR SISTEM NESTON
+=========================================
+
+Dokumen ini merangkum logika teknis utama yang digunakan dalam sistem manajemen parkir NESTON, mencakup kontroler, layanan (services), model, dan utilitas.
+
+1. MODUL OTOMATISASI PARKIR (RFID & ANPR)
+-----------------------------------------
+
+A. Prosedur: processScan(Request $request)
+   - Lokasi: RfidParkingController.php
+   - Deskripsi: Menangani alur utama deteksi kartu RFID untuk proses masuk dan keluar.
+   - Parameter: 
+     * rfid_uid (string): ID unik dari kartu fisik.
+   - Logika:
+     1. Mencari identitas user/kendaraan berdasarkan UID (Unified Lookup).
+     2. Cek status transaksi aktif.
+     3. Jika tidak ada transaksi aktif -> Jalankan Prosedur Check-in.
+     4. Jika ada transaksi aktif -> Jalankan Prosedur Check-out (Kalkulasi biaya & potong saldo).
+   - Output: JSON Response (Success/Error dengan detail user & saldo).
+
+B. Prosedur: handleDetection(Request $request)
+   - Lokasi: ANPRController.php
+   - Deskripsi: Prosedur utama untuk menangani data hasil deteksi kamera (AI).
+   - Parameter: 
+     * plate (string): Plat nomor mentah.
+     * confidence (float): Tingkat akurasi deteksi.
+     * image (file): Bukti visual kendaraan.
+   - Logika:
+     1. Normalisasi plat nomor (Regex strip spaces & Uppercase).
+     2. Upload gambar kendaraan ke Cloudinary.
+     3. Cek status parkir kendaraan di database.
+     4. Entry: Alokasi slot otomatis dan pembuatan record transaksi.
+     5. Exit: Kalkulasi biaya otomatis dan update kapasitas area.
+   - Output: JSON Response & Trigger Event real-time UI.
+
+C. Fungsi: scanPlate($image)
+   - Lokasi: PlateRecognizerService.php
+   - Deskripsi: Fungsi integrasi dengan Cloud OCR Engine.
+   - Parameter: $image (UploadedFile).
+   - Return: Array (plate_number, confidence, vehicle_color, status_valid).
+
+
+2. MANAJEMEN RUANG & AREA (DATABASE LOGIC)
+------------------------------------------
+
+A. Fungsi: findNextAvailableSlot()
+   - Lokasi: AreaParkir.php (Model)
+   - Deskripsi: Logika algoritma "Auto-Slot" untuk mencari ruang parkir kosong.
+   - Logika: 
+     * Melakukan kueri pada tabel `tb_parking_map_slots`.
+     * Memfilter slot yang TIDAK memiliki transaksi aktif (`status = masuk`).
+     * Memfilter slot yang TIDAK sedang dalam masa reservasi aktif.
+     * Mengurutkan berdasarkan kode slot (A1, A2, dst).
+   - Return: Object ParkingMapSlot atau Null jika area penuh.
+
+B. Fungsi: findByMapCode(string $raw)
+   - Lokasi: AreaParkir.php (Model)
+   - Deskripsi: Menentukan area operasional petugas berdasarkan kode unik.
+   - Parameter: $raw (string) - Kode yang diinput petugas.
+   - Return: Object AreaParkir.
+
+
+3. UTILITAS & PENDUKUNG (HELPERS)
+---------------------------------
+
+A. Fungsi: normalize(string $plat)
+   - Lokasi: PlatNomorNormalizer.php
+   - Deskripsi: Menjamin konsistensi data plat nomor di seluruh sistem.
+   - Logika: `preg_replace('/[^A-Z0-9]/i', '', trim($plat))` diikuti `strtoupper()`.
+   - Return: String plat nomor bersih (tanpa spasi/simbol).
+
+B. Fungsi: resolveCheckInArea(?User $user)
+   - Lokasi: RfidParkingController.php
+   - Deskripsi: Prosedur penentuan prioritas area tugas.
+   - Logika: Mengambil ID Area dari profil user (Database) -> Fallback ke Sesi Aktif (Kode Peta).
+
+
+4. SISTEM NOTIFIKASI & LOG (EVENT OBSERVER)
+-------------------------------------------
+
+A. Prosedur: created(Transaksi $transaksi)
+   - Lokasi: TransaksiObserver.php
+   - Deskripsi: Hook otomatis saat data parkir masuk tersimpan.
+   - Aksi: Memicu event `ParkingCheckedIn` untuk mengirim notifikasi WA/Email via Queue.
+
+B. Prosedur: updated(Transaksi $transaksi)
+   - Lokasi: TransaksiObserver.php
+   - Deskripsi: Hook otomatis saat kendaraan keluar.
+   - Aksi: 
+     1. Mencatat Log Aktifitas petugas.
+     2. Jika `waktu_keluar` baru saja diisi, picu event `ParkingCheckedOut`.
+     3. Memvalidasi `wasRecentlyCreated` untuk mencegah duplikasi notifikasi.
+
+C. Prosedur: applyCheckoutTotals(Transaksi $transaksi, Carbon $waktuKeluar)
+   - Lokasi: ANPRController.php
+   - Deskripsi: Menghitung total tagihan akhir untuk transaksi otomatis.
+   - Aturan: Durasi minimal 1 jam, pembulatan ke atas per jam berikutnya.

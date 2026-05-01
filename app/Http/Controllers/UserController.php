@@ -84,6 +84,21 @@ class UserController extends Controller
         return view('user.history', compact('transactions', 'title'));
     }
 
+    public function destroyHistory(Request $request, $id)
+    {
+        $user = $request->user();
+        $transaction = Transaksi::where('id_user', $user->id)->findOrFail($id);
+
+        // Hanya boleh hapus jika status sudah selesai/keluar
+        if (!in_array($transaction->status, ['selesai', 'keluar'])) {
+            return back()->with('error', 'Transaksi yang sedang berjalan tidak dapat dihapus dari riwayat.');
+        }
+
+        $transaction->delete();
+
+        return back()->with('success', 'Riwayat parkir berhasil dihapus.');
+    }
+
     /**
      * User: Profil sendiri
      */

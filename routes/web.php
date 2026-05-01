@@ -136,6 +136,7 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
 
     // User: Riwayat transaksi lengkap
     Route::get('/user/history', [UserController::class, 'history'])->name('user.history');
+    Route::delete('/user/history/{id}', [UserController::class, 'destroyHistory'])->name('user.history.destroy');
 
     // User: Kelola profil sendiri
     Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile');

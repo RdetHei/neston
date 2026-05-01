@@ -24,9 +24,24 @@
             <a href="{{ route('user.dashboard') }}"
                class="group w-full md:w-auto px-6 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all flex items-center justify-center gap-3 active:scale-95">
                 <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
-                Kembali ke Dashboard
+                 Kembali ke Dashboard
             </a>
         </div>
+
+        <!-- Alerts -->
+        @if(session('success'))
+            <div class="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-500 text-xs font-bold flex items-center gap-3 animate-fade-in">
+                <i class="fa-solid fa-circle-check text-sm"></i>
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-500 text-xs font-bold flex items-center gap-3 animate-fade-in">
+                <i class="fa-solid fa-circle-exclamation text-sm"></i>
+                {{ session('error') }}
+            </div>
+        @endif
 
         <!-- Table Card -->
         <div class="card-pro !p-0 overflow-hidden border-white/5 backdrop-blur-xl bg-slate-900/40 shadow-2xl">
@@ -40,6 +55,7 @@
                             <th class="px-8 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Check-out</th>
                             <th class="px-8 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Total Biaya</th>
                             <th class="px-8 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Status</th>
+                            <th class="px-8 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
@@ -114,6 +130,21 @@
                                                 Pending
                                             </span>
                                         @endif
+                                    @endif
+                                </td>
+                                <td class="px-8 py-6 text-right">
+                                    @if(in_array($trx->status, ['selesai', 'keluar']))
+                                        <form action="{{ route('user.history.destroy', $trx->id_parkir) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus catatan riwayat ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all active:scale-90 group/btn" title="Hapus Riwayat">
+                                                <i class="fa-solid fa-trash-can text-xs group-hover/btn:animate-bounce"></i>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <div class="w-9 h-9 rounded-xl bg-white/5 text-slate-700 border border-white/5 flex items-center justify-center cursor-not-allowed" title="Transaksi Aktif">
+                                            <i class="fa-solid fa-lock text-[10px]"></i>
+                                        </div>
                                     @endif
                                 </td>
                             </tr>

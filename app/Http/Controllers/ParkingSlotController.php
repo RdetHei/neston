@@ -169,14 +169,28 @@ class ParkingSlotController extends Controller
      */
     public function index(Request $request)
     {
-        $areaId = $request->query('map_id'); // map_id parameter is now area_id
+        $user = $request->user();
+        $areaId = $request->query('map_id');
         $area = null;
 
-        if ($areaId) {
-            $area = AreaParkir::find((int) $areaId);
-        }
-        if (!$area) {
-            $area = AreaParkir::getDefaultMap();
+        // Jika petugas, batasi akses API hanya untuk area tugas aktifnya
+        if ($user && $user->role === 'petugas') {
+            $area = $this->resolveOperationalArea($user);
+            
+            // Jika areaId di request berbeda dengan area operasional, tolak atau paksa ke area operasional
+            if ($areaId && (int)$areaId !== (int)$area?->id_area) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses ke area ini.'
+                ], 403);
+            }
+        } else {
+            if ($areaId) {
+                $area = AreaParkir::find((int) $areaId);
+            }
+            if (!$area) {
+                $area = AreaParkir::getDefaultMap();
+            }
         }
 
         $slots = [];
@@ -395,19 +409,16 @@ class ParkingSlotController extends Controller
         $user = $request->user();
         $areaId = $request->query('map_id');
 
-        // Jika petugas, kunci area ke id_area miliknya
+        // Jika petugas, kunci area ke area operasional atau id_area miliknya
         if ($user && $user->role === 'petugas') {
-            $area = null;
-            if ($user->id_area) {
-                $area = AreaParkir::find($user->id_area);
-            }
+            $area = $this->resolveOperationalArea($user);
 
             if (!$area) {
                 return view('parking-map', [
                     'area' => null,
                     'maps' => collect([]),
                     'title' => 'Peta Parkir',
-                    'message' => 'Anda belum ditugaskan ke area manapun yang memiliki denah visual.'
+                    'message' => 'Anda belum mengaktifkan area tugas (Kode Peta) atau ditugaskan ke area tertentu.'
                 ]);
             }
             $maps = collect([$area]);
@@ -427,6 +438,24 @@ class ParkingSlotController extends Controller
         $title = 'Peta Parkir';
 
         return view('parking-map', compact('area', 'maps', 'title'));
+    }
+
+    private function resolveOperationalArea($user): ?AreaParkir
+    {
+        // Prioritas 1: Area yang diaktifkan lewat sesi (Kode Peta)
+        $sessionId = session(PetugasDashboardController::SESSION_OPERATIONAL_AREA);
+        if ($sessionId) {
+            $area = AreaParkir::find($sessionId);
+            if ($area) return $area;
+        }
+
+        // Prioritas 2: Area yang ditautkan langsung ke user di database
+        if ($user->id_area) {
+            $area = AreaParkir::find($user->id_area);
+            if ($area) return $area;
+        }
+
+        return null;
     }
 
     public function bookmark(Request $request, AreaParkir $area)
