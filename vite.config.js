@@ -10,6 +10,18 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    build: {
+        assetsDir: 'build',
+        sourcemap: false,
+        minify: 'esbuild',
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['alpinejs', 'sweetalert2', 'chart.js']
+                }
+            }
+        }
+    },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],

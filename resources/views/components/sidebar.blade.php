@@ -23,16 +23,18 @@
         <!-- Desktop Toggle -->
         <button id="sidebar-toggle" type="button"
                 @click="desktopCollapsed = !desktopCollapsed"
+                aria-label="Toggle sidebar"
                 class="sidebar-toggle-btn hidden lg:inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white shrink-0 transition-colors">
-            <svg class="w-4 h-4 sidebar-toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 sidebar-toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
         </button>
 
         <!-- Mobile Close -->
         <button @click="sidebarOpen = false" type="button"
+                aria-label="Close sidebar"
                 class="lg:hidden inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white shrink-0 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
